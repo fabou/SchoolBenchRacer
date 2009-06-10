@@ -36,3 +36,19 @@ wenn wir das geklaert haben sollten wie uns an die konkrete Aufgabenverteilung m
 
 so weit mal mein beginn
 schoenen tag
+
+------------ Kommentar Stefan -----------
+
+Also da bei der Besprechung nur einige wenige anwesend waren, wuerde ich sagen wir sollten ein zweites Textfile erstellen, das die genauere Spielbeschreibung enthaelt. 
+ - Wie ist eine zufaellig generierte Rennstrecke aufgebaut (Matrix mit 0,1 fuer unbefahrbar und befahrbar?)
+ - Wie funktioniert die Steuerung des Autos (gibt es verschiedene Autos mit unterschiedlicher Steuerung?)
+
+ - Dann ist es schon einmal moeglich eine Pseudostrecke zu erstellen die als Basis fuer die Entwicklung einer Heuristik dient. 
+ - Jeder kann dann mal an einer eigenen Heuristik arbeiten und/oder einen der anderen oberen Vorschlaege angehen.
+
+Als Plattform fuer Kommunikation waere dieses Textfile nicht so schlecht, dann laesst es sich leicht nachvollziehen und ausserdem lernt man ein bisschen den Umgang mit dem Editieren von Files in github. Bin aber gerne auch fuer die anderen Vorschlaege offen.
+
+prost,
+Stefan
+------------
+
