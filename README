@@ -1,14 +1,14 @@
 Hallo
-Ich versuch da mal einen kleinen Fahrplan zu erstellen wie wir das Projekt angehen koennten:
+Ich versuche einmal einen Fahrplan zu erstellen, wie wir das Projekt angehen koennten:
 
 zuerst muesste ganz grundlegendes geklaert werden:
-	-Wie sollen wir im Laufe des Projektes mit einander kommunizieren;
-		--ein moeglichkeit waer wie hier schonmal als test versuch ueber git text files
-		--eine andere waere einfach eMailverteiler
+	-Wie sollen wir im Laufe des Projektes miteinander kommunizieren?
+		--ein moeglichkeit waere, wie hier schonmal als test versucht, ueber git text files;
+		--eine andere die mir einfaellte waere einfach ein eMailverteiler
 		ICH BITTE UM VORSCHLAEGE:
 
 	-Ungefaehrer Zeitplan
-		-ich schlag vor bis naechsten Dienstag (16.6.) mal alle hier aufgeworfenen fragen klaeren, dann ein woche wirklich programmieren und eine woche puffer
+		-ich schlag vor bis naechsten Dienstag (16.6.) mal alle hier aufgeworfenen fragen zu klaeren, dann ein woche wirklich programmieren und eine woche puffer
 		ICH BITTE UM VORSCHLAEGE/KOMMENTARE:
 
 
@@ -16,17 +16,17 @@ zuerst muesste ganz grundlegendes geklaert werden:
 	-Programmiersprache: 
 		--so weit wir das in der Vorlesung geklaert haben machen wir es in Perl;
 		--wobei alle die Perl nicht koennen es entweder in C machen und wir bauen es mittels swig (http://www.swig.org/) ein 
-		--wer weder C noch perl kann, fuer den suchen wir spezial aufgaben die sich dann als TXT input verarbeiten lassen (zB einen Streckengenerator der schoene anspruchsvolle Zufallsstrecken entweder als txt daeit oder ascii graph) generiert);
+		--wer weder C noch perl kann, fuer den suchen wir spezial aufgaben die sich dann als TXT input verarbeiten lassen (zB einen Streckengenerator der schoene anspruchsvolle Zufallsstrecken entweder als txt datei oder ascii graph) generiert);
 		ICH BITTE UM VORSCHLAEGE/KOMMENTARE:
 
 
-	-DAtenstruktur des Current states:
-		--da jeder ein eigenes kleines programm schreiben soll wie sein auto durch den parcour kommt, muessen wir uns darauf einigen welche daten in welcher Form ausgetauscht werden sollen
+	-Datenstruktur des 'current states':
+		--da jeder ein eigenes kleines programm schreiben soll, wie sein auto durch den parcour kommt, muessen wir uns darauf einigen, welche daten in welcher Form ausgetauscht werden sollen
 			---dabei sollte jedes Auto wissen wie der streckenverlauf ist, wie die geschwindigkeit ist und wo die anderen autos sind
 		ICH BITTE UM VORSCHLAEGE/KOMMENTARE:
 
 wenn wir das geklaert haben sollten wie uns an die konkrete Aufgabenverteilung machen; folgende aufgaben sehe ich zu verteilen:
-	-Steuerungsheuristik (sollte im idealfall jeder machen, was wahrscheinlich schon wegen der babylonischen Sprachverwirrung kaum machbar sein wird; aber 3 sollten wir schon hinbekommen)
+	-Steuerungsheuristik (sollte im idealfall jeder machen, was wahrscheinlich schon wegen der babylonischen Sprachverwirrung kaum machbar sein wird; aber 3 finde ich sollten wir schon hinbekommen)
 	-Rennstreckengenerator
 	-Visualisierung ??
 	-Sound ??
