@@ -3,13 +3,39 @@
 use strict;
 use warnings;
 use Data::Dumper;
+use vars qw/@RaceTrack %STATE $L/;
 
 
-my @RaceTrack = readin_textfile();
-   print Dumper(@RaceTrack);
+
+@RaceTrack = readin_textfile();
+#   print Dumper(@RaceTrack);
 
 
-#my %StateUpdate = update();
+
+
+## ------------------------------------------
+# Car-Subroutines must return their Position.
+
+while ($L == 1) {
+
+ $STATE{car} = car();
+ $L = checkFinish(@{$STATE{car}}[0]);
+
+}
+
+
+
+
+
+sub car {
+my $pos = shift();
+
+
+return $pos;
+}
+
+
+
 
 
 
@@ -18,9 +44,20 @@ my @RaceTrack = readin_textfile();
 sub readin_textfile {
     my @track;
     while (<>) {
-          next if ($_ =~ /\# /);
-          my @line = split(/\D/,$_);
-          push(@track, [@line]);
+          next if /^\# /;
+          push(@track, [split()]);
     }
  return @track;
 }
+
+sub checkFinish {
+	my ($x, $y) = @_;
+	$L = 1 if ($x == '1');
+	}
+
+sub start {
+	my @st_pos;
+	foreach my $k (0 .. $#{$RaceTrack}[-1]) {
+		if (${$RaceTrack}[$k] == 1) {
+			push(@st_pos, [ 
+	
