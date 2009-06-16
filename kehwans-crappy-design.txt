@@ -1,0 +1,47 @@
+About the map file:
+I suggest writing starting places into the map files - put an S instaed of a 1 where you want a stating place. Perhaps also put one or more "F" on the map for the finish point you need to drive thru to win.
+I also suggest the maps all be surrounded with a border of 0s.
+---
+Main global variables: 
+
+A matrix of 0s and 1s and Fs (finish point) to store the NxM squares large map.
+RaceTrack[x][y] = a 0 if that position is off the track and 1 if on the track, and F if it's a finish-line square.
+
+---
+A hash %STATE with all the cars that haven't finished yet.
+
+Key	Value
+Name	5pel (PosX, PosY, VelocityX, VelocityY, MussNächsteRundeAussetzen)
+
+"Abel"	(x,y, vx, vy, 0)
+"Bob"	(x,y, vx, vy, 0)
+"Cain"	(x,y, vx, vy, 0)
+...
+
+Main like this (pseudocode):
+
+Read in Map (into a matrix)
+
+Based on what was given on command line, make cars (add them to %STATE)
+
+Set for each car, the state so that all cars have vx=vy=0 and x,y at their starting places. (main needs to decide now who starts where. A simple possibility: Everyone starts at the SAME square. There is ONE starting square in the map and cars are allowed to be on the same spot when they start. Alternatively we could just put the starting places ((S1x, S1y), (S2x, S2y), ... ) into an array and shuffle this, and then distribute them to the cars - car 1 gets position nr 1 in the list, car 2 gets 2 etc.)
+
+Main passes each car subroutine %STATE, and gets as returnvalue a number between 1 and 9 representing how the car wants to accelerate
+Subroutines access the map matrix, RaceTrack[][], as a global read-only variable. -- except the functions from SWIG - i guess we'll have to pass the Racetrack matrix there too, somehow 
+
+Main updates the (vx,vy) for each car in the state - but does not update the x,y yet!
+
+#Now the time is started and the cars "drive" one turn with their new speed and main takes care of the events, like crashes or victory, etc.
+
+For each car, Main 'draws a line' from the middle of the cell (x,y) where the car started, to the cell (x+v_x, y+v_y) where it would end its turn if the track was all 1s, infinitely large, and the car was alone. (I suggest a subroutine to take x,y and vx,vy and return all the squares the line goes through as a list and this list is the path of the car this turn).
+
+If at least one cars' path includes a FINISH field (before a 0), then these cars get pushed onto the end of a list @Ranking and removed from the game. The ones where the finish is earlier in the path (at position 3/10 = 30%  vs. at 2/3 = 66%) got to the finish line first, so they go first onto the ranking.
+		
+If a cars path includes a 0, main puts the car (its x,y) on the last 1 of its path where it went off track. Its velocity is set to (0,0) and its MussAussetzen is set to 1
+
+Those cars whose path is all 1s, are put to the end of their path (x0+vx, y0+vy)
+But if two cars move to the same square in this way (CRASH!) we have to do something, we cant just allow them to drive through each other, no?
+For example, set vx=vy=0 for both cars, or what I like more, Instead make the cars bounce off one another like billiard balls (change the cars' vx and vy the way the vx and vy would change if the cars were colliding billiard balls)
+
+The above gets looped until no more cars are in the game.
+

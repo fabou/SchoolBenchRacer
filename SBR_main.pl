@@ -26,7 +26,8 @@ pod2usage(-verbose => 0)
 
 while ($L == 0) {
 
- $STATE{car} = car();
+ $STATE{car} = car(%STATE);				#Kehwan: If each car subroutine gets to return the state after its move, then car #2 will get the state AFTER car #1 moved, and the cars are not moving "in parallel" each turn, but one after the other.
+								#Kehwan: Also, as long as main uncritically accepts the state car() returns, car() can cheat. Maybe we should just have the car()s return a number between 1 and 9 representing how the cars want to accelerate next turn. Main would update the vx,vy of the cars, and do the "driving" and handle events like crashes and cars going off track and cars going through "FINISH" squares.
  $L = checkFinish(@{$STATE{car}}[0]);
 
 
