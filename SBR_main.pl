@@ -1,4 +1,4 @@
-#!usr/local/bin/perl
+#!usr/local/bin/perl -w
 
 use strict;
 use warnings;
@@ -33,9 +33,8 @@ while ($L == 0) {
 
 
  $c++;                  # for testing purpose     
- return if ($c == 10);  # for testing purpose  
+ $L=1 if ($c == 10);  # for testing purpose  
 }
-
 
 
 #-------- Subroutines --------#
