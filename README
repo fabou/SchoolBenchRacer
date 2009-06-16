@@ -70,7 +70,7 @@ wie immer bitte ich um kommentare kritik und so weiter
 Lg fabian
 
 PS: siehe Wiki
-
+-----------------------------------
 Danke für die Vorarbeiten!
 
 - Bezüglich Strecken: Sollen wir die automatisch generieren oder von Hand bauen? (von Hand editierte wären halt selektiver)
@@ -80,6 +80,8 @@ Danke für die Vorarbeiten!
 -- Was mir noch einfällt: 
 -+ Könnten wir nicht den Spielernamen (zb A,B,..) als Hash key nehmen und das Fahrmodel im array speichern, der Vorteil wäre dass verschiedene Spieler das gleiche Fahrmodel wählen könnten.
 -+ Die Reihenfolge in welcher gestartet wird und anschließend über die Strecke bewegt werden müssen wir auch noch irgendwie festlegen (zb shufflen der Hash keys einmalig oder nach jedem Zug).
+-+ Sounds wären auch interessant, könnten in einem Unterfolder /sounds abgelegt werden und bei beschleunigen/verzögern/crash/zieldurchfahrt abgespielt werden
+-+ Graphical output: Möglichkeiten?
 
 Lg,
 Markus
