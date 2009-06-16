@@ -85,4 +85,15 @@ Danke für die Vorarbeiten!
 
 Lg,
 Markus
- 
+-------------------------------------
+Hallo,
+
+.) Strecken: Dani hat gesagt sie macht einen streckengenerator in java der ein txtfile ausspuckt -> wiki
+.) Wollt ihr das die autos durcheinander durchfahren können oder soll's auch crashes geben?
+.) Ich habe mir gedacht wir sollten uns überlegen was die main genau machen soll (nicht unbedingt: wie, aber: was), ich hab mal ein halb ausgereiftes design dazu gepostet -> design[kehwan].txt 
+.) Alternativ dazu kann jemand die main mit gut lesbarem code einfach implementieren, und dabei soviel wie möglich an funktionen auslagern, die noch nicht geschrieben sind wo aber definiert ist was sie tun
+.) Im %State sollten wir bei einem Auto noch speichern ob es nächste runde aussetzen muss Dh: (Auto1name => ([x,y], [vx, vy], 0), Auto2name => ...)
+.) Ich finde auch wir sollten in den streckenfiles die Startpunkte und Zielpunkte definieren (zB mit S und F in der matrix). Wenn ich das richtig verstehe ist momentan RaceTrack[x][y] = 0 für unbefahrbar, 1 für befahrbar; wir könnten da einfach noch 'S' für die startpositionen und 'F' für die finish position reinsetzen. Am einfachsten wäre es gäbe einfach 1 startpunkt und alle autos fangen da an. Oder, es gibt mehrere, dann könnte man zB nen Array machen ((Start1x, Start1y), (Start2x, Start2y), ...) indem man die matrix nach S durchsucht; diesen shuffeln, und dann foreach auto: (x,y) = pop(Array)
+
+Lg,
+Cavan
