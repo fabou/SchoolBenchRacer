@@ -53,3 +53,18 @@ Stefan
 
 ------------
 
+Hallo nochmal
+
+Stefan und ich haben uns mangels anderem input einmal auf eine datenstruktur geeinigt:
+	jede Subroutine erhaelt vom Main einen Hash in dem jedes Auto als key representiert wird
+	in diesem hash stehen zu jedem key 2 arrays
+		das erste array gibt die aktuelle position des autos an
+		das 2. array gibt die aktuelle geschwindigkeit an
+	aus dieser info und der globalen variable in der als 2D matrix die strecke codiert ist berechnet jede subroutine eine neue position und neu geschwindigkeit die dann wieder and Main ausgegeben wird und im %STATE versorgt wird
+stefan und ich basteln bereits an einem Main das folgende funktionen koennen sollte:
+	eine extern generierte strecke einlesen
+	jedem auto eine start position zuweisen
+	erkennen ob ein auto das rennen gewonnen hat
+
+wie immer bitte ich um kommentare kritik und so weiter 
+Lg fabian
