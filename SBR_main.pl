@@ -7,9 +7,9 @@ use Getopt::Long;
 use Pod::Usage;
 use vars qw/@RaceTrack %STATE $L $map_file/;
 
-$L = 0;                          # wenn jemand das ziel erreich wird $L=1
-my $c =0;                        # for testing purpose
-my @modes = qw/ car1 car2/;      # liste aller heuristik subroutinen
+$L = 0;                            # wenn jemand das ziel erreich wird $L=1
+my $c =0;                          # for testing purpose
+my @modes = qw/ car1 player/;      # liste aller heuristik subroutinen
 
 pod2usage(-verbose => 0)
     unless GetOptions(
@@ -32,41 +32,46 @@ pod2usage(-verbose => 0)
 
 @RaceTrack = readin_textfile();
 
-&set_start()
+&set_start();
 
 while ($L == 0) {
   
   foreach (keys %STATE) {
-    if ($STATE{$_}{mode} eq 'car1') {
+    if ($STATE{$_}{'mode'} eq 'car1') {
       %STATE=&car1(%STATE);
     }
-    if ($STATE{$_}{mode} eq 'car1') {
-      %STATE=&car2(%STATE);
+    if ($STATE{$_}{'mode'} eq 'player') {
+      %STATE=&player(%STATE);
     }
-    
+        
   }
   
   $L = &check_Finish();
   &check_collision();
   
-
-
-
-
- $c++;                  # for testing purpose     
- $L=1 if ($c == 10);    # for testing purpose  
+  $c++;                  # for testing purpose     
+  $L=1 if ($c == 10);    # for testing purpose  
 }
 
 
-#-------- Subroutines --------#
+#--------Steuerungs-Subroutines --------#
 
 sub car1 {
-  my %STATE = @_;
-  print "car1\n";
+  my %daten = @_;
+  print "car1\n";        # for testing purpose   
 
-  return %STATE;
+  return %daten;
 }
 
+sub player {
+  my %daten = @_;
+  print "player\n";     # for testing purpose
+  
+  return %daten;
+}
+
+
+#------------- Subroutines -------------#
 
 sub readin_textfile {
   my @track;
@@ -84,13 +89,13 @@ sub set_start {
 }
 
 sub check_Finish {
-  #checkt ob ein oder mehrere autos das ziel ereich haben 
+  #checkt ob ein oder mehrere autos das ziel ereich haben
+  return 0;
 }
 
-sub check_collistion{
+sub check_collision{
   #schaut ob es collisionen gab, zw. autos, bwz mit streckenrand
-
-
+}
 
 __END__
 =pod
