@@ -74,13 +74,16 @@ PS: siehe Wiki
 Danke für die Vorarbeiten!
 
 - Bezüglich Strecken: Sollen wir die automatisch generieren oder von Hand bauen? (von Hand editierte wären halt selektiver)
+	BEITRAG fabian: das wird in JAVA geschrieben und dann einfach mit einer subroutine eingelesen, da sollte aber die danni sagen wie sie das genau macht damit wir die einlese routine dementsprechend machen koennen
 
 - Die Idee für die Main Loop, welche die auto subs mit Daten versorgt und nach dem Zug wieder speichert finde ich gut.
 
 -- Was mir noch einfällt: 
 -+ Könnten wir nicht den Spielernamen (zb A,B,..) als Hash key nehmen und das Fahrmodel im array speichern, der Vorteil wäre dass verschiedene Spieler das gleiche Fahrmodel wählen könnten.
+	BEITRAG fabian: das ist stefan und mir auch schon aufegefallen, ich werde das versuchen heute vormittag so um zu schreiben
 -+ Die Reihenfolge in welcher gestartet wird und anschließend über die Strecke bewegt werden müssen wir auch noch irgendwie festlegen (zb shufflen der Hash keys einmalig oder nach jedem Zug).
 -+ Sounds wären auch interessant, könnten in einem Unterfolder /sounds abgelegt werden und bei beschleunigen/verzögern/crash/zieldurchfahrt abgespielt werden
+	BEITRAG fabian: super idee, aber macht nur sinn mit einer graphischen umsetzung,  dazu haben wir uns noch keine gedanken gemacht
 -+ Graphical output: Möglichkeiten?
 
 Lg,
@@ -90,10 +93,13 @@ Hallo,
 
 .) Strecken: Dani hat gesagt sie macht einen streckengenerator in java der ein txtfile ausspuckt -> wiki
 .) Wollt ihr das die autos durcheinander durchfahren können oder soll's auch crashes geben?
+	BEITRAG fabian: prinzipiell duerfen die autos nicht in einander fahren, die frage ist ob das die subroutine einfach nicht ausgeben darf oder ob wenn es doch passiert beide geschwindigkeit auf null gesetzt bekommen und eine runde aussetzen muessen (so wie beim abkommen von der strecke)
 .) Ich habe mir gedacht wir sollten uns überlegen was die main genau machen soll (nicht unbedingt: wie, aber: was), ich hab mal ein halb ausgereiftes design dazu gepostet -> design[kehwan].txt 
 .) Alternativ dazu kann jemand die main mit gut lesbarem code einfach implementieren, und dabei soviel wie möglich an funktionen auslagern, die noch nicht geschrieben sind wo aber definiert ist was sie tun
 .) Im %State sollten wir bei einem Auto noch speichern ob es nächste runde aussetzen muss Dh: (Auto1name => ([x,y], [vx, vy], 0), Auto2name => ...)
 .) Ich finde auch wir sollten in den streckenfiles die Startpunkte und Zielpunkte definieren (zB mit S und F in der matrix). Wenn ich das richtig verstehe ist momentan RaceTrack[x][y] = 0 für unbefahrbar, 1 für befahrbar; wir könnten da einfach noch 'S' für die startpositionen und 'F' für die finish position reinsetzen. Am einfachsten wäre es gäbe einfach 1 startpunkt und alle autos fangen da an. Oder, es gibt mehrere, dann könnte man zB nen Array machen ((Start1x, Start1y), (Start2x, Start2y), ...) indem man die matrix nach S durchsucht; diesen shuffeln, und dann foreach auto: (x,y) = pop(Array)
+	BEITRAG fabian: das ist eine moeglichkeit: oder wir definieren einfach alle befahrbaren felder der untersten zeile der @RacceTrack - Matrix als start felder und alle befahrbaren felder der obersten zeile als ziel felder
+			haengt vielleicht auch damit zusammen wie und ob wir das graphisch ausgeben wollen;
 
 Lg,
 Cavan
