@@ -58,14 +58,14 @@ while ($L == 0) {
 
 sub car1 {
   my %daten = @_;
-  print "car1\n";        # for testing purpose   
+  print "car1\n";        # only for testing purpose   
 
   return %daten;
 }
 
 sub player {
   my %daten = @_;
-  print "player\n";     # for testing purpose
+  print "player\n";     # only for testing purpose
   
   return %daten;
 }
