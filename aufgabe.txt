@@ -1,0 +1,51 @@
+hallo
+
+da bei der letzten Algorithmen vorlesung 270034 nur 3 leute anwesend waren, erlaube ich mir in einem rundmail die neue aufgabe weiter zu reichen;
+ich tue das vorallem deshalb weil wir dieses mal ein programm als gruppe abgeben muessen; dabei geht es vorallem um das arbeiten mit einem Revision Control System zu lernen (http://en.wikipedia.org/wiki/Revision_Control_System), im speziellen arbeiten wir mit dem git (http://en.wikipedia.org/wiki/Git_(software)).
+dazu soll sich jeder auf git (www.github.com) einen kostenlosen account einrichten und dann am Projekt SchoolBenchRacer partizipieren; dazu alle angaben die ihr brauchts um eine copy des repository zu bekommen:
+
+Public Clone URL:       git://github.com/fabou/SchoolBenchRacer.git
+user name		fabou
+
+schreibt mir einfach ne eMail mit eurem git hub namen damit ich euch als coworker eintragen kann;
+wenn es probleme mit dem git gibt, helfen die herrn professoren sicher gerne per eMail weiter;
+
+Kurz noch zur aufgabe (genaueres findet ihr in der datei README im repository):
+wir sollen ein computerspiel basteln das einem papier/bleistift spiel nach empfunden ist, das der xtof in seiner schulzeit gespielt hat;
+die regeln sind wie folgt:
+beispiel eines spielbrett ( in echt groesser und strecke breiter):
++-+-+-+-+-+-+-+-+-+-+
+|#|#|#|#|#|#|#| | |#|
++-+-+-+-+-+-+-+-+-+-+
+|#|#|#|#|#|#|#| | |#|
++-+-+-+-+-+-+-+-+-+-+
+|#|#| | | | |#| | |#|
++-+-+-+-+-+-+-+-+-+-+
+|#| | |#| | |#| | |#|
++-+-+-+-+-+-+-+-+-+-+
+|#| |#|#| | |#| | |#|
++-+-+-+-+-+-+-+-+-+-+
+|#| |#|#| | |#| | |#|
++-+-+-+-+-+-+-+-+-+-+
+|#| | |#| | |#| | |#|
++-+-+-+-+-+-+-+-+-+-+
+|#| | |#|#| | | | |#|
++-+-+-+-+-+-+-+-+-+-+
+|#| | |#|#|#|#|#|#|#|
++-+-+-+-+-+-+-+-+-+-+
+
+das Spielfeld muss mit einem Auto durchquert werden, gespielt wird
+in runden; von runde zu runde darf man seinen geschwindigkeitsvektor nur
+in einer dimension um den wert 1 veraendern;
+wer von der strecke abkommt, hat automatisch eine geschwindigkeit von 
+(0/0) und muss eine runde aussetzen; gewonnen hat wer zuerst im ziel ist;
+stellen an denen bereits ein auto steht, duerfen nicht befahren werden
+
+
+
+
+ich bitte euch moeglichst rasch einen account anzulegen und mal ein bischen uebers wochenende mit dem git spielen, damit wir dann anfang naechster woche organisieren koennen, und dann noch genug zeit zum programmieren haben;
+wenns fragen gibt an die profs oder an mich;
+vielen dank schon mal im vorraus;
+
+lg fabian
