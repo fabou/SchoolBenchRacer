@@ -5,7 +5,7 @@ use warnings;
 use Data::Dumper;
 use Getopt::Long;
 use Pod::Usage;
-use vars qw/@RaceTrack %STATE $L $map_file/;
+use vars qw/@RaceTrack %STATE $map_file $L/;
 
 $L = 0;                            # wenn jemand das ziel erreich wird $L=1
 my $c =0;                          # for testing purpose
