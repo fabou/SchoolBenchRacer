@@ -33,7 +33,7 @@ while ($L == 0) {
 
 
  $c++;                  # for testing purpose     
- $L=1 if ($c == 10);  # for testing purpose  
+ $L=1 if ($c == 10);    # for testing purpose  
 }
 
 
