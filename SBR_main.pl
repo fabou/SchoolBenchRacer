@@ -17,11 +17,14 @@ pod2usage(-verbose => 0)
 			 foreach my $l (@racers) {
 			   my @racer = split (":", $l);
 			   $STATE{$racer[0]}->{'mode'}="$racer[1]";
+			   $STATE{$racer[0]}->{'position'}=[15, 9];
+			   $STATE{$racer[0]}->{'speed'}=[0, 0];
+			   $STATE{$racer[0]}->{'aussetzer'}='0';
 			 }
-                       },
+      },
       "modes"   => sub{print "@modes\n";
 		       exit;
-		       },
+      },
       "track:s" => sub{ $map_file = $_[1] },
       "help|?"  => sub{pod2usage(-verbose => 1)},
       "man"     => sub{pod2usage(-verbose => 2)}
@@ -36,14 +39,14 @@ pod2usage(-verbose => 0)
 
 while ($L == 0) {
   
-  foreach (keys %STATE) {
-    if ($STATE{$_}{'mode'} eq 'car1') {
-      %STATE=&car1(%STATE);
+  foreach my $l (keys %STATE) {
+    if ($STATE{$l}{'mode'} eq 'car1') {
+      %STATE=&car1($l, %STATE);
     }
-    if ($STATE{$_}{'mode'} eq 'player') {
-      %STATE=&player(%STATE);
+    if ($STATE{$l}{'mode'} eq 'player') {
+      %STATE=&player($l, %STATE);
     }
-        
+    
   }
   
   $L = &check_Finish();
@@ -59,13 +62,52 @@ while ($L == 0) {
 sub car1 {
   my %daten = @_;
   print "car1\n";        # only for testing purpose   
-
+  
   return %daten;
 }
 
-sub player {
+sub player {                    #subroutine zum haendischen steuern des autos, um gegen den Computer anzutreten
+  my $name = shift;
   my %daten = @_;
-  print "player\n";     # only for testing purpose
+  my @streckenbild = @RaceTrack;
+  my ($px_alt, $py_alt) = @{$daten{$name}{position}};
+  my ($vx_alt, $vy_alt) = @{$daten{$name}{speed}};
+  my $status = $daten{$name}{aussetzer};
+  my @moeglichkeiten = ();
+  my ($sp_x, $sp_y) = ($px_alt + $vx_alt, $py_alt + $vy_alt);
+  
+  if ($status == 1) {                    #schaut ob man diese runde aussetzen muss
+    @{$daten{$name}{speed}} = (0, 0);
+    $daten{$name}{aussetzer} = '0';
+    return %daten;
+  }
+  
+  
+
+  foreach my $n ([$sp_x-1, $sp_y-1],[$sp_x-1, $sp_y],[$sp_x-1, $sp_y+1],[$sp_x, $sp_y-1],[$sp_x, $sp_y],[$sp_x, $sp_y+1],[$sp_x+1, $sp_y-1],[$sp_x+1, $sp_y],[$sp_x+1, $sp_y+1]) {
+    if ($streckenbild[${$n}[0]][${$n}[1]]) {
+      push (@moeglichkeiten, [@{$n}]);
+    }
+  }
+  
+  unless (@moeglichkeiten) {            #checkt ob man die naechste runde aussetzen muss
+    $daten{$name}{aussetzer} = '1';
+    return(%daten);
+  }
+  
+  print "\n$name:\naktuelle position:\t[$px_alt, $py_alt]\naktuelle geschwindig.:\t[$vx_alt, $vy_alt]\n";
+  print "moegliche zuege:\n";
+  foreach (0 .. $#moeglichkeiten) {
+    print "($_)\t@{$moeglichkeiten[$_]}\n";
+  }
+  print "\nBitte waehlen Sie ihre neue Position (0 bis 8): ";
+  my $wahl = <STDIN>;
+
+  my ($px_neu, $py_neu) = @{$moeglichkeiten[$wahl]};
+  my ($vx_neu, $vy_neu) = ($px_neu-$px_alt, $py_neu-$py_alt);
+  
+  @{$daten{$name}{position}}=($px_neu, $py_neu);
+  @{$daten{$name}{speed}}=($vx_neu, $vy_neu);
   
   return %daten;
 }
@@ -132,3 +174,12 @@ Show man page.
 
 =back
 
+=head1 STEUERSUBROUTINEN
+
+=over 4
+
+=item I<player>
+
+Keine KI sondern nur zum selber gegen den Computer zu spielen gedacht.
+
+    =cut
