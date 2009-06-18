@@ -10,7 +10,7 @@ use Pod::Usage;
 use vars qw/@RaceTrack %STATE $map_file $F/;
 
 $F = 0;                            # wenn jemand das ziel erreich wird $L=1
-my $c =0;                          # for testing purpose
+my $c =0;                          # counter for testing purpose
 my @modes = qw/ car1 player/;      # liste aller heuristik subroutinen
 
 pod2usage(-verbose => 0)
@@ -54,21 +54,18 @@ while ($F == 0) {
   $F = &check_Finish(\@RaceTrack, \%STATE);
   &check_collision();  
   
-  $c++;                  # for testing purpose     
-  $F=1 if ($c == 50);    # for testing purpose  
+  $c++;   
+  $F=1, print "No winner after $c rounds!!\n" if ($c == 50);
 }
 
 
 #--------Steuerungs-Subroutines --------#
 
-sub car1 {
+sub car1 { 			# Cheater Subroutine, finishes within the First round!
   my $name = shift;
   my %daten = @_;
-
   @{$daten{$name}{position}}=(0, 46);
-
-  
-  return %daten;
+ return %daten;
 }
 
 sub player {                    #subroutine zum haendischen steuern des autos, um gegen den Computer anzutreten
@@ -128,8 +125,6 @@ sub readin_textfile {
 
   my @track;
 
-
-  
   open MAP, "< Racetrack.txt" or die "WARNING: can not open the racing track!\a\n";
   while (<MAP>) {
     next if /^\# /;
@@ -179,15 +174,15 @@ sub check_Finish {
     my %state = %{shift()};
     my $l=0;
 
+	# Checks if a player that reached line 0 moved to a valid position
     foreach my $racer (keys %state) { 
        if ($state{$racer}->{'position'}->[0] == 0 && $track[0]->[$state{$racer}->{'position'}->[1]] == 1) {
-         print "The glorious $racer finished the race\n";
-         $l = 1;
+          print "The glorious $racer finished the race\n";
+          $l = 1;
        }
      }
 
-if ($l == 1) {return 1 }
-else {return 0}
+ return 0 unless ($l == 1);
 }
 
 sub check_collision{
