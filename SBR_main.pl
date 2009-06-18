@@ -1,5 +1,7 @@
 #!usr/local/bin/perl -w
 
+# perl SBR_main.pl -racer Name:player -track racetrack.txt
+
 use strict;
 use warnings;
 use Data::Dumper;
@@ -17,7 +19,7 @@ pod2usage(-verbose => 0)
 			 foreach my $l (@racers) {
 			   my @racer = split (":", $l);
 			   $STATE{$racer[0]}->{'mode'}="$racer[1]";
-			   $STATE{$racer[0]}->{'position'}=[15, 9];
+			   $STATE{$racer[0]}->{'position'}=[undef];
 			   $STATE{$racer[0]}->{'speed'}=[0, 0];
 			   $STATE{$racer[0]}->{'aussetzer'}='0';
 			 }
@@ -35,7 +37,8 @@ pod2usage(-verbose => 0)
 
 @RaceTrack = readin_textfile();
 
-&set_start();
+%STATE = set_start(\@RaceTrack, \%STATE);
+print Dumper(%STATE);
 
 while ($L == 0) {
   
@@ -127,7 +130,38 @@ sub readin_textfile {
 }
 
 sub set_start {
-  #weist allen autos eine startposition zu
+    my @track = @{shift()};
+    my %state = %{shift()};
+    my $height = $#track;
+    my @starts;
+
+	# Reads Starting Positions in @starts
+    my $count=0;
+    foreach (@{$track[$height]}) {
+       if ($_ eq 1) {
+	  push(@starts, $count);
+       }
+       $count++
+    }
+
+	# Shuffles Starting Positions
+    foreach (my $pos=$#starts; $pos>0; $pos--) {
+       my $ran = int(rand($pos));
+       if ($starts[$pos] ne $starts[$ran]) {
+          @starts[$pos, $ran]=@starts[$ran, $pos];
+       }
+    }
+
+	# Assigns Starting Positions
+    foreach my $racer (keys %state) { 
+       if (defined($state{'position'})) {
+          print "Somethig is wrong!\n";
+       } else { 
+          my $pos = pop(@starts);
+	  $state{$racer}->{'position'}=[$height, $pos];
+       }
+    }
+ return %state;
 }
 
 sub check_Finish {
