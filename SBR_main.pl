@@ -7,9 +7,9 @@ use warnings;
 use Getopt::Long;
 use Data::Dumper;
 use Pod::Usage;
-use vars qw/@RaceTrack %STATE $map_file $L/;
+use vars qw/@RaceTrack %STATE $map_file $F/;
 
-$L = 0;                            # wenn jemand das ziel erreich wird $L=1
+$F = 0;                            # wenn jemand das ziel erreich wird $L=1
 my $c =0;                          # for testing purpose
 my @modes = qw/ car1 player/;      # liste aller heuristik subroutinen
 
@@ -39,31 +39,34 @@ pod2usage(-verbose => 0)
 
 %STATE = set_start(\@RaceTrack, \%STATE);
 
-while ($L == 0) {
+while ($F == 0) {
   
-  foreach my $l (keys %STATE) {
-    if ($STATE{$l}{'mode'} eq 'car1') {
-      %STATE=&car1($l, %STATE);
-    }
-    if ($STATE{$l}{'mode'} eq 'player') {
-      %STATE=&player($l, %STATE);
-    }
+  foreach my $player (keys %STATE) {
+
+    if ($STATE{$player}{'mode'} eq 'car1') {
+      %STATE=&car1($player, %STATE);
+    } elsif ($STATE{$player}{'mode'} eq 'player') {
+      %STATE=&player($player, %STATE);
+    } else { print "$player: Please use valid mode! (e.g. player)\n" }
     
   }
-  
-  $L = &check_Finish();
-  &check_collision();
+
+  $F = &check_Finish(\@RaceTrack, \%STATE);
+  &check_collision();  
   
   $c++;                  # for testing purpose     
-  $L=1 if ($c == 10);    # for testing purpose  
+  $F=1 if ($c == 50);    # for testing purpose  
 }
 
 
 #--------Steuerungs-Subroutines --------#
 
 sub car1 {
+  my $name = shift;
   my %daten = @_;
-  print "car1\n";        # only for testing purpose   
+
+  @{$daten{$name}{position}}=(0, 46);
+
   
   return %daten;
 }
@@ -172,8 +175,19 @@ sub set_start {
 }
 
 sub check_Finish {
-  #checkt ob ein oder mehrere autos das ziel ereich haben
-  return 0;
+    my @track = @{shift()};
+    my %state = %{shift()};
+    my $l=0;
+
+    foreach my $racer (keys %state) { 
+       if ($state{$racer}->{'position'}->[0] == 0 && $track[0]->[$state{$racer}->{'position'}->[1]] == 1) {
+         print "The glorious $racer finished the race\n";
+         $l = 1;
+       }
+     }
+
+if ($l == 1) {return 1 }
+else {return 0}
 }
 
 sub check_collision{
