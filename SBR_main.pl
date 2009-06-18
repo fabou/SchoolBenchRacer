@@ -197,7 +197,7 @@ sub check_Finish {
   # Checks if a player that reached line 0 moved to a valid position
   foreach my $racer (keys %state) { 
     if ($state{$racer}->{'position'}->[0] == 0 && $track[0]->[$state{$racer}->{'position'}->[1]] == 1) {
-      print "The glorious $racer finished the race\n";
+      printf ("\n+-----------------------------------------+\n|+---------------------------------------+|\n||The glorious %8s finished the race||\n|+---------------------------------------+|\n+-----------------------------------------+\n", $racer); # gibt den sieger formatiert aus
       $l = 1;
     }
   }
