@@ -1,44 +1,38 @@
-#!usr/local/bin/perl -w
-
-# perl SBR_main.pl -racer Name:player -track racetrack.txt
+#!usr/local/bin/perl
 
 use strict;
 use warnings;
 use Getopt::Long;
 use Data::Dumper;
 use Pod::Usage;
-use vars qw/@RaceTrack %STATE $map_file $F/;
+use vars qw/@RaceTrack %STATE $map_file/;
 
-$F = 0;                            # wenn jemand das ziel erreich wird $L=1
-my $c =0;                          # counter for testing purpose
 my @modes = qw/ car1 player/;      # liste aller heuristik subroutinen
 
 pod2usage(-verbose => 0)
     unless GetOptions(
       "racer:s" => sub { my @racers =split(",", $_[1]);
-			 foreach my $l (@racers) {
-			   my @racer = split (":", $l);
-			   $STATE{$racer[0]}->{'mode'}="$racer[1]";
-			   $STATE{$racer[0]}->{'position'}=[undef];
-			   $STATE{$racer[0]}->{'speed'}=[0, 0];
-			   $STATE{$racer[0]}->{'aussetzer'}='0';
-			 }
-      },
-      "modes"   => sub{print "@modes\n";
-		       exit;
-      },
-      #"track:s" => sub{ $map_file = $_[1] },
+			    foreach my $l (@racers) {
+			       my @racer = split (":", $l);
+			       $STATE{$racer[0]}->{'mode'}="$racer[1]";
+			       $STATE{$racer[0]}->{'position'}=[undef];
+			       $STATE{$racer[0]}->{'speed'}=[0, 0];
+			       $STATE{$racer[0]}->{'aussetzer'}='0';
+			    }
+                       },
+      "modes"   => sub{ print "@modes\n"; exit; },
+      "track=s" => sub{ $map_file = $_[1] },
       "help|?"  => sub{pod2usage(-verbose => 1)},
       "man"     => sub{pod2usage(-verbose => 2)}
     );
 
 
-#liest extern generierte Strecke nach dem Muster von racetrack.txt ein
-
-@RaceTrack = readin_textfile();
+# Assigns random generated or user-favored racetrack
+@RaceTrack = readin_racetrack();
 
 %STATE = set_start(\@RaceTrack, \%STATE);
 
+my ($c, $F) = (0,0);	# Counter for time trial and Finish-Variable
 while ($F == 0) {
   
   foreach my $player (keys %STATE) {
@@ -117,15 +111,17 @@ sub player {                    #subroutine zum haendischen steuern des autos, u
 
 #------------- Subroutines -------------#
 
-sub readin_textfile {
+sub readin_racetrack {
+unless ($map_file) {
   my $status = system("java -jar  ./RennstreckenGenerator.jar");
   if (($status >>=8) !=0) {
     die "WARNING: Failed to run the Track Generator!\a\n";
   }
-
+$map_file="Racetrack.txt";
+}
   my @track;
 
-  open MAP, "< Racetrack.txt" or die "WARNING: can not open the racing track!\a\n";
+  open MAP, "< $map_file" or die "WARNING: can not open the racing track!\a\n";
   while (<MAP>) {
     next if /^\# /;
     push(@track, [split()]);
@@ -205,6 +201,10 @@ SBR.pl [[-racer I<STRING>] [-modes] [-help|?] [-man]]
 =item B<-racer>
 
 Names of the racers separated by ":" from the mode used (q.v. -mode); each racer:mode pair is separated by "," from the next. S<C<Example: SBR.pl -racer foo:car1,bar:car2>>
+
+=item B<-track>
+
+Option to play on a handmade trackfileS. C<Example: -track racetrack.txt>
 
 =item B<-modes>
 
