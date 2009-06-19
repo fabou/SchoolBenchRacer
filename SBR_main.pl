@@ -76,7 +76,8 @@ sub car1 { 			# Cheater Subroutine, finishes within the First round!
  return %daten;
 }
 
-sub player {                    #subroutine zum haendischen steuern des autos, um gegen den Computer anzutreten
+sub player {
+#subroutine zum haendischen steuern des autos, um gegen den Computer anzutreten
   my $name = shift;
   my %daten = @_;
   my @streckenbild = @RaceTrack;
@@ -103,6 +104,7 @@ sub player {                    #subroutine zum haendischen steuern des autos, u
   
   #berechnet alle erreichbaren felder und schaut ob sie auf der strecke liegen
   foreach my $n ([$sp_x-1, $sp_y-1],[$sp_x-1, $sp_y],[$sp_x-1, $sp_y+1],[$sp_x, $sp_y-1],[$sp_x, $sp_y],[$sp_x, $sp_y+1],[$sp_x+1, $sp_y-1],[$sp_x+1, $sp_y],[$sp_x+1, $sp_y+1]) {
+    ${$n}[0]=0 if (${$n}[0]<0);
     if ($streckenbild[${$n}[0]][${$n}[1]]) {
       push (@moeglichkeiten, [@{$n}]);
     }
@@ -196,9 +198,9 @@ sub check_Finish {
   
   # Checks if a player that reached line 0 moved to a valid position
   foreach my $racer (keys %state) {
-    ($state{$racer}->{'position'}->[0] = 0 if ($state{$racer}->{'position'}->[0] < 0;   #setezt zeile auf null wenn man uebers ziel hinausschiesst
+    $state{$racer}->{'position'}->[0] = 0 if ($state{$racer}->{'position'}->[0] < 0);   #setezt zeile auf null wenn man uebers ziel hinausschiesst
     if ($state{$racer}->{'position'}->[0] == 0 && $track[0]->[$state{$racer}->{'position'}->[1]] == 1) {
-      printf ("\n\n+-----------------------------------------+\n|+---------------------------------------+|\n||The glorious %8s finished the race||\n|+---------------------------------------+|\n+-----------------------------------------+\n", $racer); # gibt den sieger formatiert aus
+      printf ("\n\n+-----------------------------------------+\n|+---------------------------------------+|\n||The glorious %8s finished the race||\n|+---------------------------------------+|\n+-----------------------------------------+\n\n\n", $racer); # gibt den sieger formatiert aus
       $l = 1;
     }
   }
