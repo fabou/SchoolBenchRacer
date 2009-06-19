@@ -119,3 +119,10 @@ Ja, hab mich auch schon gewundert. Möglicherweise weil ich den Readme text dire
 Ansonsten warte ich immer noch auf eine Antwort was genau der Streckengenerator zurückgeben soll, und ob das überhaupt funktioniert so. Wollt ihr wirklich Abstände zwischen den Nullern und Einsern? Sollen Start und Zielpunkte gekennzeichnet werden? Ich bin nächste Woche von Di-So nicht in Wien, sollte das daher vor dem Wochenende noch wissen damit ich es programmieren kann. 
 
 lg, Daniela
+
+---------
+hallo
+wegen den verschwundenen eintraegen: das muss ich wohl auf meine kappe nehmen, manchmal kann ich nicht updaten, da bin ich drauf gekommen dass die option --force wunder bewirken kann, anscheinend abereher blaue wunder, sorry dafuer;
+mit dem strecken generator geht das so weit, ich hab den schon in den perl code reingecodet; abstaende zwischen den zeichen ist gut, so koennen wir das leicht in ein array rein splitten, ziel und start muss du nicht kennzeichnen, wir definieren bishe einfachr beim einlesen  alle befahrbaren felder in der untersten zeile als start plaetze und alle befahrbaren felder in der obersten zeile als ziel felder; das geht ganz gut bisher; aber prinzipiell wuerd ich meinen du hast freie hand und wir passen den code dann an deine strecken an;
+ 
+lg fabian
