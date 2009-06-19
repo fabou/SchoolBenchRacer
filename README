@@ -126,3 +126,12 @@ wegen den verschwundenen eintraegen: das muss ich wohl auf meine kappe nehmen, m
 mit dem strecken generator geht das so weit, ich hab den schon in den perl code reingecodet; abstaende zwischen den zeichen ist gut, so koennen wir das leicht in ein array rein splitten, ziel und start muss du nicht kennzeichnen, wir definieren bishe einfachr beim einlesen  alle befahrbaren felder in der untersten zeile als start plaetze und alle befahrbaren felder in der obersten zeile als ziel felder; das geht ganz gut bisher; aber prinzipiell wuerd ich meinen du hast freie hand und wir passen den code dann an deine strecken an;
  
 lg fabian
+
+---------------
+
+Hab mich mal ein bisschen in SDL_perl gespielt, map array einlesen und visualisieren funktieniert schon einmal.
+Werd ein sample program später hochladen.
+Wegen der Zieldurchfahrt: Wie checken wir ob wir im Ziel sind, wenn verticale Felder der obersten/bzw untersten Zeile (je nachdem ob Ziel oben oder unten ist) befahren werden und die neue position undef ist?
+
+Lg,
+Markus
