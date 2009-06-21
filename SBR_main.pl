@@ -238,6 +238,8 @@ sub check_collision{
 
 
 sub vis {
+
+  #gibt eine text datei namens STRECKE aus die nach jeder runde aktualisiert wird; hat noch einen bug irgendwo
   my @strecke = @{shift()};
   my %daten = %{shift()};
   my @bild=();      
@@ -257,7 +259,7 @@ sub vis {
     substr($bild[$x], $y, 1, $init);
   }
 
-  open MAP, " >./STECKE";
+  open MAP, " >./STRECKE";
   foreach (@bild) {
     print MAP "$_\n";
   }
