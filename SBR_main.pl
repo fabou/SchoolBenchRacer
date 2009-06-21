@@ -46,6 +46,8 @@ pod2usage(-verbose => 0)
 
 while ($F == 0) {
 
+  &vis(\@RaceTrack, \%STATE);
+  
   printf ("\n+----------+\n|RUNDE: %3d|\n+----------+\n", $COUNT_ROUND);
   $COUNT_ROUND++;
   
@@ -60,10 +62,11 @@ while ($F == 0) {
   }
 
   $F = &check_Finish(\@RaceTrack, \%STATE);
-  %STATE = &check_collision(%STATE);  
+  %STATE = &check_collision(%STATE);
   
   
-  $F=1, print "No winner after $COUNT_ROUND rounds!!\n" if ($COUNT_ROUND == 50);
+  
+  $F=1, print "No winner after $COUNT_ROUND rounds!!\n" if ($COUNT_ROUND == 88);
 }
 
 
@@ -139,7 +142,9 @@ sub player {
 
 sub readin_racetrack {
   unless ($map_file) {
-    my $status = system("java -jar  ./RennstreckenGenerator.jar");
+
+    my $spielerzahl = (keys %STATE);
+    my $status = system("java -jar  ./RennstreckenGenerator.jar $spielerzahl");
     if (($status >>=8) !=0) {
       die "WARNING: Failed to run the Track Generator!\a\n";
   }
@@ -150,6 +155,7 @@ sub readin_racetrack {
   open MAP, "< $map_file" or die "WARNING: can not find/open $map_file!\a\n";
   while (<MAP>) {
     next if /^\# /;
+    next if /^\n/;
     push(@track, [split()]);
   }
   close MAP;
@@ -161,7 +167,8 @@ sub set_start {
   my %state = %{shift()};
   my $height = $#track;
   my @starts;
-  
+
+ 
   # Reads Starting Positions in @starts
   my $count=0;
   foreach (@{$track[$height]}) {
@@ -200,7 +207,7 @@ sub check_Finish {
   foreach my $racer (keys %state) {
     $state{$racer}->{'position'}->[0] = 0 if ($state{$racer}->{'position'}->[0] < 0);   #setezt zeile auf null wenn man uebers ziel hinausschiesst
     if ($state{$racer}->{'position'}->[0] == 0 && $track[0]->[$state{$racer}->{'position'}->[1]] == 1) {
-      printf ("\n\n+-----------------------------------------+\n|+---------------------------------------+|\n||The glorious %8s finished the race||\n|+---------------------------------------+|\n+-----------------------------------------+\n\n\n", $racer); # gibt den sieger formatiert aus
+      printf ("\n\n+-+---------------------------------------+-+\n+ +---------------------------------------+ +\n| |The glorious %8s finished the race| |\n+ +---------------------------------------+ +\n+-+---------------------------------------+-+\n\n\n", $racer); # gibt den sieger formatiert aus
       $l = 1;
     }
   }
@@ -229,6 +236,36 @@ sub check_collision{
   return %data;
 }
 
+
+sub vis {
+  my @strecke = @{shift()};
+  my %daten = %{shift()};
+  my @bild=();      
+
+  foreach (@strecke) {
+    my $zeile=join "", @{$_};
+    $zeile=~tr/01/\# /;
+    push(@bild, $zeile);
+  }
+
+  my %position;
+  
+  foreach my $renner (keys %STATE) {
+    my $init = substr($renner, 0, 1);
+    my $x = ${$daten{$renner}{position}}[0];
+    my $y = ${$daten{$renner}{position}}[1];
+    substr($bild[$x], $y, 1, $init);
+  }
+
+  open MAP, " >./STECKE";
+  foreach (@bild) {
+    print MAP "$_\n";
+  }
+  close MAP;
+}
+  
+  
+  
 __END__
 
     
