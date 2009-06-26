@@ -1,33 +1,42 @@
-struct listnode{
-	void *value;
-	struct listnode *next;
+/*this provides lists of void pointers*/
+/*the lists are implemented as circular doubly linked lists*/
+
+struct list{
+	struct listnode *	head;	/*0th node*/
+	int				size;		/*number of elements in the list*/
 };
 
-struct listnode *list_find(struct listnode *entry, void *x);
-	/*returns element containing x*/
-
-struct listnode * list_add(struct listnode *entry, void *x);
-	/*adds x after specified entry. If given NULL as arument, creates a new list.
-	Returns pointer to entry, or to first list element if NULL was the list added to.*/
-
-void list_remove(struct listnode *entry, void *x);
-	/*deletes first entry with x, that occurs after (not at) entry entry*/
-
-void list_end(struct listnode *lastentry);
-	/*makes the specified entry the last entry, and deletes all behind that*/
-	/*gives error on empty list*/
-
-void list_destroy(struct listnode **firstentry);
-	/*Frees all memory associated with list entries. Must use with first entry of a list, else: memory leak occurs.*/
-	/*Remember to set any list pointer to NULL after destroying it...*/
-
-void * list_pop(struct listnode **firstentry);
-/*Returns the value of the first entry and removes it from the list*/
-
-struct listnode * list_push(struct listnode *entry, void *x);
-/*adds x before specified entry, which must be a first list element or NULL. Returns pointer to entry added*/
+struct listnode{
+	void *			value;	/*the actual thing stored in the list*/
+	struct listnode *	next;	/*node's successor. may be either the one with the next higher index, or the 0th node*/
+	struct listnode *	prev;	/*node's predecessor. may be either the one with the next lower index, or the last node*/
+};
 
 
+/*header needs to be rewritten using comments and definitions of public functions in linkedlist.c*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*the below needs adaptation*/
 #define foreach(laufvariable, linked_list) for (___curr_lnode=linked_list, laufvariable = (___curr_lnode) ? ___curr_lnode->value : laufvariable;	___curr_lnode != NULL;	___curr_lnode = ___curr_lnode->next, laufvariable = (___curr_lnode) ? ___curr_lnode->value : laufvariable)
 	struct listnode * ___curr_lnode;
 	/*foreach(laufvariable, linked_list) iterates over all *values* in a linked list*/
