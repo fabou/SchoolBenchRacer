@@ -12,6 +12,9 @@ struct listnode{
 	struct listnode *	prev;	/*node's predecessor. may be either the one with the next lower index, or the last node*/
 };
 
+struct list * 	list_new(void);
+	/*creates a new, emtpy list and returns a pointer.*/
+
 void list_remove(struct list *, int index, void (*value_destroyer)(void *));
 /*deletes the list node in the specified position from the list. Third argument gives a function that will be applied to the value pointer. Specify free to free the memory at that address, NULL to leave it be, or another function. O(index)*/
 
@@ -68,7 +71,8 @@ void list_add_after(struct list *list, void *data, int index);
 void list_add_before(struct list *list, void *data, int index);
 /*adds x before the node with the specified index. Will not work on empty lists. Will do nothing if the index does not exist. O(index)*/
 
-
+void list_destroy (struct list *list, void(*value_destroyer)(void*))
+/*Destroys all nodes in a given list, making it blank. Applies value_destroyer to each value before destroying its node.*/
 
 
 #define foreach(laufvariable, list) if (list != NULL && list->size > 0) for (___curr_index = 0, laufvariable = list->head->value;  ___curr_index < list->size; list_rotate(list, -1), ___curr_index++)

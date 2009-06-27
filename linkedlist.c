@@ -272,6 +272,16 @@ void * list_rshift(struct list *list){
 void list_destroy (struct list *list, void(*value_destroyer)(void*)){
 	/*Destroys all nodes in a given list, making it blank. Applies value_destroyer to each value before destroying its node.*/
 	
+	if (list == NULL){
+		fprintf(stderr, "file %s, line %i: Warning: attempt made to destroy NULL list. Doing nothing.\n", __FILE__, __LINE__);
+		return;
+	}
+	
+	if (list->head == NULL){
+		assert(list->size == 0)
+		return;	/*list already blank*/
+	}
+	
 	/*linearize list*/
 	list->head->prev	->next = NULL;
 	list->head		->prev = NULL;
