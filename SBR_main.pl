@@ -19,8 +19,10 @@ use vars qw/@RaceTrack %STATE $map_file @ERGEBNISLISTE/;
 my $CRASH_COUNT=0;
 my $COUNT_ROUND=1;
 my $F = 0;  # Counter for time trial and Finish-Variable
+my %OptPathZeile;
+my %OptPathSpalte;
 
-my @modes = qw/ car1 player/; # liste aller heuristik subroutinen
+my @modes = qw/ car1 player carW/; # liste aller heuristik subroutinen
 
 pod2usage(-verbose => 0)
     unless GetOptions(
@@ -85,6 +87,7 @@ track_map();
 
 %STATE = &set_start(\@RaceTrack, \%STATE);
 old_data();
+&optimum_path("Wolfi", 0);
 while ($F < (keys %STATE)) {
   
   #&vis(\@RaceTrack, \%STATE);
@@ -100,12 +103,15 @@ while ($F < (keys %STATE)) {
     elsif ($STATE{$player}{'mode'} eq 'player') {
       %STATE=&player($player, %STATE);
     }
+     elsif ($STATE{$player}{'mode'} eq 'carW') {
+      %STATE=&carW($player, %STATE);
+    }   
   }
   
   &check_Finish(\@RaceTrack, \%STATE);
   %STATE = &check_collision(%STATE);
   
-  
+  sleep(1);
   
   $F=99, print "No winner after $COUNT_ROUND rounds!!\n" if ($COUNT_ROUND == 99);
 }
@@ -114,7 +120,6 @@ foreach my $num (0 .. $#ERGEBNISLISTE) {
   my $rank = $num+1;
   print "${rank}.\t$ERGEBNISLISTE[$num]\n";
 }
-print "\n";
 
 
 #--------Steuerungs-Subroutines --------#
@@ -142,7 +147,7 @@ sub player {
   if ($status == 1) { #schaut ob man diese runde aussetzen muss weil man die wand traf
     @{$daten{$name}{speed}} = (0, 0);
     $daten{$name}{aussetzer} = '0';
-    print "\n$name ist in eine Wand gecrasht und muss sein Auto kurz durchchecken\n";
+    print "$name ist in eine Wand gecrasht und muss aussetzen\a\n";
     #$mixer->play_channel(-1, $carcrash_sound, 0);
     return %daten;
   }
@@ -166,52 +171,8 @@ sub player {
     }
   }
   unless (@moeglichkeiten) { #checkt ob man die naechste runde aussetzen muss
-    my ($position_x, $position_y);
-    my $diff_x = $px_alt - $sp_x;
-    my $diff_y = $py_alt - $sp_y;
-    
     $daten{$name}{aussetzer} = '1';
-
-    if ($diff_x >= 0 && $diff_y >= 0){
-      foreach my $x (0 .. $diff_x) {
-	foreach my $y (0 .. $diff_y) {
-	  if ($streckenbild[$px_alt - $x][$py_alt - $y]){
-	    @{$daten{$name}{position}}=($px_alt -  $x, $py_alt - $y);
-	  }
-	}
-      }
-    }
-    elsif ($diff_x <= 0 && $diff_y <= 0){
-      foreach my $x (0 .. abs($diff_x)) {
-	foreach my $y (0 .. abs($diff_y)) {
-	  if ($streckenbild[$px_alt + $x][$py_alt + $y]){
-	    @{$daten{$name}{position}}=($px_alt +  $x, $py_alt + $y);
-	  }
-	}
-      }
-    }
     
-    elsif ($diff_x <= 0 && $diff_y >= 0){
-      foreach my $x (0 .. abs($diff_x)) {
-	foreach my $y (0 .. $diff_y) {
-	  if ($streckenbild[$px_alt + $x][$py_alt - $y]){
-	    @{$daten{$name}{position}}=($px_alt +  $x, $py_alt - $y);
-	  }
-	}
-      }
-    }
-    elsif ($diff_x >= 0 && $diff_y >= 0){
-      foreach my $x (0 .. abs($diff_x)) {
-	foreach my $y (0 .. abs($diff_y)) {
-	  if ($streckenbild[$px_alt - $x][$py_alt + $y]){
-	    @{$daten{$name}{position}}=($px_alt -  $x, $py_alt + $y);
-	  }
-	}
-      }
-    }
-
-    
-    print "\n\a$name verliert die Kontrolle ueber sein Auto und landet an der stelle  @{$daten{$name}{position}} unsanft in der Mauer\n";
     return(%daten);
   }  
 #draw_next_pos($px_alt,$py_alt,$vx_alt,$vy_alt);
@@ -250,6 +211,44 @@ sub player {
 #update von %STATE mit neuer position und geschwindigkeit
   @{$daten{$name}{position}}=($px_neu, $py_neu);
   @{$daten{$name}{speed}}=($vx_neu, $vy_neu);
+  return %daten;
+}
+
+sub carW {
+  my $name = shift;
+  my %daten = @_;
+  my @streckenbild = @RaceTrack;
+  my ($px_alt, $py_alt) = @{$daten{$name}{'position'}};
+  my ($vx_alt, $vy_alt) = @{$daten{$name}{'speed'}};
+  my $status = $daten{$name}{'aussetzer'};
+
+  if ($status == 3) { #schaut ob man eh schon im ziel ist
+      return %daten;}
+
+  if ($status == 2) { #schaut ob man diese runde aussetzen muss weil man mit auto collidierte
+    $CRASH_COUNT++;
+    @{$daten{$name}{speed}} = (0, 0);
+    $daten{$name}{aussetzer} = '0';
+    ${$daten{$name}{position}}[1]-=1 if ($CRASH_COUNT % 2);
+    print "$name ist mit anderem auto collidiert und muss aussetzen!\n";
+    &optimum_path($name,$COUNT_ROUND-1);
+    #$mixer->play_channel(-1, $carcrash_sound, 0);
+    return %daten;
+  }
+
+  unless (@OptPathZeile{$name}) {&optimum_path($name, 0)};
+  printf ("\n$name:\nAlte Position:\t[%d, %d]\nAlte Geschwindigkeit:\t[%d, %d]\n", $px_alt, $py_alt, $vx_alt*(-1), $vy_alt);
+
+  if ($px_alt!=$OptPathZeile{$name}[$COUNT_ROUND-2]) {printf ("$px_alt, $COUNT_ROUND, $OptPathZeile{$name}[$COUNT_ROUND-1]: Mis-Communication between Main and CarW.\n")};
+  if ($py_alt!=$OptPathSpalte{$name}[$COUNT_ROUND-2]) {printf ("Mis-Communication between Main and CarW.\n")};
+  
+
+  @{$daten{$name}{position}}=($OptPathZeile{$name}[$COUNT_ROUND-1], $OptPathSpalte{$name}[$COUNT_ROUND-1]);
+  @{$daten{$name}{speed}}=($OptPathZeile{$name}[$COUNT_ROUND-1]-$px_alt, $OptPathSpalte{$name}[$COUNT_ROUND-1]-$py_alt);
+  printf ("Neue Position:\t[%d, %d]\nNeue Geschwindigkeit:\t[%d, %d]\n", $OptPathZeile{$name}[$COUNT_ROUND-1], $OptPathSpalte{$name}[$COUNT_ROUND-1],($OptPathZeile{$name}[$COUNT_ROUND-1]-$px_alt)*(-1), $OptPathSpalte{$name}[$COUNT_ROUND-1]-$py_alt);
+ 
+
+  
   return %daten;
 }
 
@@ -529,6 +528,135 @@ sub track_map {
 #$app->sync();
   }
 }
+
+sub optimum_path {
+    my $name=shift();
+    my $Zeitpunkt=shift();
+
+    # 2D-array of hashes where value=reference to array of coordinates
+    my @AlleFelder=();
+    #push( @{$AlleFelder[3][2]{1}}, (19,21));
+
+    my $ZeilenAnzahl=@RaceTrack;
+    my $SpaltenAnzahl=@{$RaceTrack[0]};
+    #print "Racetrack Dimensions: $ZeilenAnzahl x $SpaltenAnzahl\n";
+
+    #INIT STARTPOSITION
+    my $StartZeile, my $StartSpalte;
+    #foreach my $Player (keys %STATE) { #an nur 1 player anpassen
+    #    ($StartZeile, $StartSpalte) = @{$STATE{$Player}{'position'}};
+	#print "$Player is at $X, $Y.\n";
+    #}
+    ($StartZeile, $StartSpalte) = @{$STATE{$name}{'position'}};
+    push( @{$AlleFelder[$StartZeile][$StartSpalte]{$Zeitpunkt}}, ($StartZeile,$StartSpalte)); ####
+    #$StartZeile=15;
+    #$StartSpalte=6;
+    #push( @{$AlleFelder[$StartZeile][$StartSpalte]{0}}, (15,6));
+    
+    #ITERATION
+    #my $Zeitpunkt=0;
+    my $Finished=0;
+    my $FinishX;
+    my $FinishY;
+    #if (0) {
+    while ($Finished==0) {
+        for(my $i=0; $i<$ZeilenAnzahl; $i++) {
+	    for(my $j=0; $j<$SpaltenAnzahl; $j++) {
+	        foreach my $runde (sort keys %{$AlleFelder[$i][$j]}) {
+		    if ($runde == $Zeitpunkt) {
+			#print "Feld $i, $j: ($runde): @{$AlleFelder[$i][$j]{$runde}}\n";
+			my @KommendVon=@{$AlleFelder[$i][$j]{$runde}};
+			while (@KommendVon) {
+			    my $SpeedX=$i-shift(@KommendVon);
+			    my $SpeedY=$j-shift(@KommendVon);
+			    #print "\nFeld $i, $j: ($runde): @{$AlleFelder[$i][$j]{$runde}}\n";
+			    #print "Speed: $SpeedX, $SpeedY\n";
+
+			    foreach my $ZeileNeu ($i+$SpeedX-1, $i+$SpeedX, $i+$SpeedX+1) {
+				foreach my $SpalteNeu ($j+$SpeedY-1, $j+$SpeedY, $j+$SpeedY+1) {
+				    if ($RaceTrack[$ZeileNeu][$SpalteNeu]) {
+					if ($ZeileNeu==0) {
+					    $Finished=1;
+					    #print "letzter Zug: von $i, $j nach $ZeileNeu, $SpalteNeu\n";
+					    $FinishX=$ZeileNeu;
+					    $FinishY=$SpalteNeu;
+					}; #NOCH EINBAUEN: ZEILE<0, was passiert ueberhaupt bei rausfahren aus spielfeld?
+					#print "->$ZeileNeu, $SpalteNeu: ";
+					#ueberpruefen ob neues Feld schon in frueherem Zug von altem Feld aus erreicht werden kann
+					my $NotNew=0;
+					foreach my $VergangeneRunde (sort keys %{$AlleFelder[$ZeileNeu][$SpalteNeu]}) {
+					    my @AlterVektor=@{$AlleFelder[$ZeileNeu][$SpalteNeu]{$VergangeneRunde}};
+					    #print "@AlterVektor";
+					    while (@AlterVektor) {
+						my $aa=shift(@AlterVektor);
+						my $bb=shift(@AlterVektor);
+						if (($aa==$i) && ($bb==$j)) {$NotNew=1; last}
+						
+						#if ((shift(@AlterVektor),shift(@AlterVektor)) == ($i,$j)) {$NotNew=1; print "no $i $j\n"; last}
+					    }
+					    if ($NotNew) {last};
+					}
+
+					#wenn nicht -> push
+					if ($NotNew==0) {push( @{$AlleFelder[$ZeileNeu][$SpalteNeu]{$Zeitpunkt+1}}, ($i,$j))};
+				    }
+				}
+			    }
+			}
+		    }
+	        }
+	    }
+        }	
+        $Zeitpunkt++;
+	#print "Zug $Zeitpunkt done\n";
+	#if ($Zeitpunkt==7) {$Finished=1};
+    }
+    #}
+    
+#    for(my $i=0; $i<$ZeilenAnzahl; $i++) {
+#	for(my $j=0; $j<$SpaltenAnzahl; $j++) {
+#	    foreach my $runde (sort keys %{$AlleFelder[$i][$j]}) {
+#                    print "Feld $i, $j: ($runde): @{$AlleFelder[$i][$j]{$runde}}\n";
+#	    }
+#	}
+#    }
+   
+    print "Length of optimum path: $Zeitpunkt\n";
+     
+    #BACKTRACKING
+    #my @OptPathZeile;
+    #my @OptPathSpalte;
+    $OptPathZeile{$name}[$Zeitpunkt]=$FinishX;
+    $OptPathSpalte{$name}[$Zeitpunkt]=$FinishY;
+
+    my @KommendVon=@{$AlleFelder[$FinishX][$FinishY]{$Zeitpunkt}};
+    $FinishX=shift(@KommendVon);
+    $FinishY=shift(@KommendVon);
+    $Zeitpunkt--;
+    $OptPathZeile{$name}[$Zeitpunkt]=$FinishX;
+    $OptPathSpalte{$name}[$Zeitpunkt]=$FinishY;
+
+    while (($FinishX!=$StartZeile) || ($FinishY!=$StartSpalte)) {
+	@KommendVon=@{$AlleFelder[$FinishX][$FinishY]{$Zeitpunkt}};
+	do {
+	    $FinishX=shift(@KommendVon);
+	    $FinishY=shift(@KommendVon);
+	} while ((abs($FinishX+$OptPathZeile{$name}[$Zeitpunkt+1]-2*$OptPathZeile{$name}[$Zeitpunkt])>1) || (abs($FinishY+$OptPathSpalte{$name}[$Zeitpunkt+1]-2*$OptPathSpalte{$name}[$Zeitpunkt])>1));
+	$Zeitpunkt--;
+        $OptPathZeile{$name}[$Zeitpunkt]=$FinishX;
+        $OptPathSpalte{$name}[$Zeitpunkt]=$FinishY;
+
+}
+    #for(my $i=0;$i<$OptPathZeile{$name};++$i) {
+    #for(my $i=0;$i<5;++$i) {
+    for my $i ( 0 .. $#{ $OptPathZeile{$name} } ) {
+
+	
+        print "$i: $OptPathZeile{$name}[$i], $OptPathSpalte{$name}[$i]\n";
+    }
+}
+  
+ 
 __END__
     
 =pod
@@ -571,6 +699,6 @@ Show man page.
  
 =item I<player>
  
-Keine KI sondern nur zum selber gegen den Computer zu spielen gedacht. Erster wert die vertikale Geschwindigkeit an (positive Werte zeigen nach oben, negative nach unten), der zweite Wert steht fuer die horizontale Geschwindigkeit (negativ weist nach links, positiv nach rechts). Mit der Eingabe 'q' kann man das Spiel jederzeit beenden.
+Keine KI sondern nur zum selber gegen den Computer zu spielen gedacht.
  
 =cut
