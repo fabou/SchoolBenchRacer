@@ -87,7 +87,7 @@ track_map();
 old_data();
 while ($F < (keys %STATE)) {
   
-  &vis(\@RaceTrack, \%STATE);
+  #&vis(\@RaceTrack, \%STATE);
   
   printf ("\n+----------+\n|RUNDE: %3d|\n+----------+\n", $COUNT_ROUND);
   $COUNT_ROUND++;
@@ -114,6 +114,7 @@ foreach my $num (0 .. $#ERGEBNISLISTE) {
   my $rank = $num+1;
   print "${rank}.\t$ERGEBNISLISTE[$num]\n";
 }
+print "\n";
 
 
 #--------Steuerungs-Subroutines --------#
@@ -141,7 +142,7 @@ sub player {
   if ($status == 1) { #schaut ob man diese runde aussetzen muss weil man die wand traf
     @{$daten{$name}{speed}} = (0, 0);
     $daten{$name}{aussetzer} = '0';
-    print "$name ist in eine Wand gecrasht und muss aussetzen\a\n";
+    print "\n$name ist in eine Wand gecrasht und muss sein Auto kurz durchchecken\n";
     #$mixer->play_channel(-1, $carcrash_sound, 0);
     return %daten;
   }
@@ -165,8 +166,52 @@ sub player {
     }
   }
   unless (@moeglichkeiten) { #checkt ob man die naechste runde aussetzen muss
-    $daten{$name}{aussetzer} = '1';
+    my ($position_x, $position_y);
+    my $diff_x = $px_alt - $sp_x;
+    my $diff_y = $py_alt - $sp_y;
     
+    $daten{$name}{aussetzer} = '1';
+
+    if ($diff_x >= 0 && $diff_y >= 0){
+      foreach my $x (0 .. $diff_x) {
+	foreach my $y (0 .. $diff_y) {
+	  if ($streckenbild[$px_alt - $x][$py_alt - $y]){
+	    @{$daten{$name}{position}}=($px_alt -  $x, $py_alt - $y);
+	  }
+	}
+      }
+    }
+    elsif ($diff_x <= 0 && $diff_y <= 0){
+      foreach my $x (0 .. abs($diff_x)) {
+	foreach my $y (0 .. abs($diff_y)) {
+	  if ($streckenbild[$px_alt + $x][$py_alt + $y]){
+	    @{$daten{$name}{position}}=($px_alt +  $x, $py_alt + $y);
+	  }
+	}
+      }
+    }
+    
+    elsif ($diff_x <= 0 && $diff_y >= 0){
+      foreach my $x (0 .. abs($diff_x)) {
+	foreach my $y (0 .. $diff_y) {
+	  if ($streckenbild[$px_alt + $x][$py_alt - $y]){
+	    @{$daten{$name}{position}}=($px_alt +  $x, $py_alt - $y);
+	  }
+	}
+      }
+    }
+    elsif ($diff_x >= 0 && $diff_y >= 0){
+      foreach my $x (0 .. abs($diff_x)) {
+	foreach my $y (0 .. abs($diff_y)) {
+	  if ($streckenbild[$px_alt - $x][$py_alt + $y]){
+	    @{$daten{$name}{position}}=($px_alt -  $x, $py_alt + $y);
+	  }
+	}
+      }
+    }
+
+    
+    print "\n\a$name verliert die Kontrolle ueber sein Auto und landet an der stelle  @{$daten{$name}{position}} unsanft in der Mauer\n";
     return(%daten);
   }  
 #draw_next_pos($px_alt,$py_alt,$vx_alt,$vy_alt);
@@ -526,6 +571,6 @@ Show man page.
  
 =item I<player>
  
-Keine KI sondern nur zum selber gegen den Computer zu spielen gedacht.
+Keine KI sondern nur zum selber gegen den Computer zu spielen gedacht. Erster wert die vertikale Geschwindigkeit an (positive Werte zeigen nach oben, negative nach unten), der zweite Wert steht fuer die horizontale Geschwindigkeit (negativ weist nach links, positiv nach rechts). Mit der Eingabe 'q' kann man das Spiel jederzeit beenden.
  
 =cut
