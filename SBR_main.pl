@@ -21,7 +21,7 @@ my $COUNT_ROUND=1;
 my $F = 0;  # Counter for time trial and Finish-Variable
 my (%OptPathZeile, %OptPathSpalte); # globale Variablen fuer carW
 
-my @modes = qw/car1 player carW carF/; # liste aller heuristik subroutinen
+my @modes = qw/car1 player carW carF rambo/; # liste aller heuristik subroutinen
 
 pod2usage(-verbose => 0)
     unless GetOptions(
@@ -88,8 +88,6 @@ track_map();
 old_data();
 while ($F < (keys %STATE)) {
   
-;
-  
   printf ("\n+----------+\n|RUNDE: %3d|\n+----------+\n", $COUNT_ROUND);
   $COUNT_ROUND++;
   
@@ -106,6 +104,9 @@ while ($F < (keys %STATE)) {
     }
     elsif ($STATE{$player}{'mode'} eq 'carF') {
       %STATE=&carF($player, %STATE);
+    }
+    elsif ($STATE{$player}{'mode'} eq 'rambo') {
+      %STATE=&rambo($player, %STATE);
     }
   }
   
@@ -471,6 +472,150 @@ sub carF {
   }
 }
 
+
+sub rambo {
+    my $name = shift;
+    my %state = @_;
+    
+#-- START  --#
+    my $status = $state{$name}{'aussetzer'};
+    if ($status == 1) {                    #schaut ob man diese runde aussetzen muss weil man die wand traf
+       @{$state{$name}{speed}} = (0, 0);
+       $state{$name}{aussetzer} = '0';
+       print "$name ist in eine Wand gecrasht und muss aussetzen\a\n";
+     return %state;
+    } elsif ($status == 2) {                 #schaut ob man diese runde aussetzen muss weil man mit auto collidierte
+       $CRASH_COUNT++;
+       @{$state{$name}{speed}} = (0, 0);
+       $state{$name}{aussetzer} = '0';
+       ${$state{$name}{position}}[1]-=1 if ($CRASH_COUNT % 2);
+       print "$name ist mit anderem auto collidiert und muss aussetzen!\n";
+     return %state;
+    }
+#-- END  --#
+    
+    my @track = @RaceTrack;
+    my $height = $#track;
+    my $width  = scalar(@{$track[0]})-1;
+    
+    my ($s_y, $s_x) = @{$state{$name}{'position'}};	# Starting Coordinates
+    my ($s_vy, $s_vx) = @{$state{$name}{'speed'}};	# Starting Speed
+    my ($py, $px)= ($s_y+$s_vy, $s_vx+$s_x);		# Middle of Options
+
+    # Change all 1 that are not finish into X
+    my $ROAD = 'X';
+    my ($m, $n);    
+    foreach $m (@track) {
+       next if ($m eq $track[0]);
+       foreach $n (@$m) { $n = $ROAD if ($n eq 1) }
+    }
+
+    # Starting from $score in Finish, set all surrounding values to $score+1 until my current position is reached
+    my $score = 1;
+    while ($track[$s_y][$s_x] eq $ROAD) {
+	for $m (0..$height) {
+	    next if ($m == $track[0]);
+            for $n (0..$width) { 
+                 set_score(\@track, $score, $m, $n, $ROAD) if (defined($track[$m][$n]) && $track[$m][$n] eq $score); 
+            }
+        }
+	$score++;
+    }
+
+    # Print Matrix for Bugfix
+    #foreach $m (@track) {
+    #   foreach $n (@$m) {
+    #      printf "%2s ", $n;
+    #    } print "\n";
+    #}
+
+    my $range = 5;
+    my @neighbours = findoptions(\@track, $s_y, $s_x, $range, $ROAD); 
+    #print "Position: \t$s_y \t$s_x\nSpeed: \t\t$s_vy \t$s_vx\nOptions: Dumper(\@options)"."\n";
+    
+    my $lowest=$score;
+    my $temp;
+    foreach my $pair (@neighbours) {
+	if ( defined($pair) && ($track[@$pair[0]]->[@$pair[1]] < $lowest) ) {
+	    $lowest = $track[@$pair[0]]->[@$pair[1]];
+	    $temp =  $pair;
+	}
+    }
+
+    my @options = findoptions(\@track, $py, $px, 1, $ROAD);
+    my $clowest=$score;
+    
+    foreach my $pos (@options) {
+	if ($track[@$pos[0]]->[@$pos[1]] == $lowest) {
+	    @{$state{$name}{'position'}}=(@$pos[0], @$pos[1]);
+	    @{$state{$name}{'speed'}}=((@$pos[0]-$s_y), (@$pos[1]-$s_x));
+            foreach $m (@track) {
+               foreach $n (@$m) { $n = 1 if ($n ne 0) }
+            }
+	    return %state;
+	} else {
+	    $clowest = $track[@$pos[0]]->[@$pos[1]] if ( defined($pos) && ($track[@$pos[0]]->[@$pos[1]] < $clowest) );
+	}
+    }
+    foreach my $pos (@options) {
+	if ($track[@$pos[0]]->[@$pos[1]] == $clowest) {
+	    @{$state{$name}{'position'}}=(@$pos[0], @$pos[1]);
+	    @{$state{$name}{'speed'}}=((@$pos[0]-$s_y), (@$pos[1]-$s_x));
+            foreach $m (@track) {
+               foreach $n (@$m) { $n = 1 if ($n ne 0) }
+            }
+	    return %state;
+	}
+    }
+
+    foreach $m (@track) {
+       foreach $n (@$m) { $n = 1 if ($n ne 0) }
+    }  
+    
+    unless (@options) {            #checkt ob man die naechste runde aussetzen muss
+	$state{$name}{aussetzer} = '1';
+        print "Crashed";
+     return %state;
+    }
+    
+  print "FUCK, MISTAKE IN SUBROUTINE";
+ return %state;
+}
+
+sub set_score {				 # set new score if: 	1) surrounding value is definded
+    my @track = @{shift()};		 #			2) it is ROAD or greater than $score
+    my ($score, $cm, $cn, $ROAD) = @_;
+    for my $y (-1 .. 1) {
+	my $cy = $cm+$y;
+	for my $x (-1 .. 1) {
+	    my $cx = $cn+$x;
+	    next if (!defined($track[$cy][$cx]));
+	    $track[$cy][$cx] = $score+1 if ($track[$cy][$cx] eq $ROAD || $track[$cy][$cx] > $score);
+	}
+    }
+}
+
+sub findoptions {
+    my @track = @{shift()};
+    my ($py, $px, $G, $ROAD) = @_;
+    my @opt;
+    for my $y (-$G .. $G) {
+	my $cy = $py+$y;
+	for my $x (-$G .. $G) {
+	    my $cx = $px+$x;
+	    #next unless ($y == $x || -$y == $x || $y == 0 || $x == 0);
+	    next if (!defined ($track[$cy][$cx]));
+	    next if ($track[$cy][$cx] eq $ROAD);
+	    next if ($track[$cy][$cx] eq 0);
+            push (@opt, [$cy, $cx]);
+	}
+    }
+ return @opt;
+}
+
+
+
+
 #------------- Subroutines -------------#
 
 sub readin_RaceTrack {
@@ -567,35 +712,35 @@ $mixer->play_channel(-1, $carcrash_sound, 0);
 }
 
 
-sub vis {
-  
-#gibt eine text datei namens STRECKE aus die nach jeder runde aktualisiert wird; hat noch einen bug irgendwo
-  my @strecke = @{shift()};
-  my %daten = %{shift()};
-  my @bild=();
-  
-  foreach (@strecke) {
-    my $zeile=join "", @{$_};
-    $zeile=~tr/01/\# /;
-    push(@bild, $zeile);
-  }
-  
-  my %position;
-  foreach my $renner (keys %STATE) {
-    my $init = substr($renner, 0, 1);
-    my $x = ${$daten{$renner}{position}}[0];
-    my $y = ${$daten{$renner}{position}}[1];
-    substr($bild[$x], $y, 1, $init);
-  }
-  
-  open MAP, " >./STRECKE";
-  foreach (@bild) {
-    print MAP "$_\n";
-  }
-  close MAP;
-}
-#SDL begin -----
+#sub vis {
+##gibt eine text datei namens STRECKE aus die nach jeder runde aktualisiert wird; hat noch einen bug irgendwo
+#  my @strecke = @{shift()};
+#  my %daten = %{shift()};
+#  my @bild=();
+#  
+#  foreach (@strecke) {
+#    my $zeile=join "", @{$_};
+#    $zeile=~tr/01/\# /;
+#    push(@bild, $zeile);
+#  }
+#  
+#  my %position;
+#  foreach my $renner (keys %STATE) {
+#    my $init = substr($renner, 0, 1);
+#    my $x = ${$daten{$renner}{position}}[0];
+#    my $y = ${$daten{$renner}{position}}[1];
+#    substr($bild[$x], $y, 1, $init);
+#  }
+#  
+#  open MAP, " >./STRECKE";
+#  foreach (@bild) {
+#    print MAP "$_\n";
+#  }
+#  close MAP;
+#}
 
+
+#----- SDL begin -----
 
 sub track_cars {
  
@@ -747,7 +892,7 @@ sub track_map {
 #$app->sync();
   }
 }
-
+#--------SDL END -------#
 
 sub optimum_path {
     my $name=shift();
