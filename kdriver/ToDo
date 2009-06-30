@@ -3,8 +3,12 @@
 0.) Data structure for a state of single player car-race.
 
 1.) Function to calculate the child states of a given single-player car-race state, as defined in what I wrote at uni.
+1b.) Instead: Perhaps dynamic programming algo to find, for each reachable map square, the shortest sequence of moves to get to that square (with any velocity vector at that square)
 
 
+2.) Play with SWIG. I'll need to take some parameters (current board state for all cars) from perl and pass back the new state
+
+3.)  
 
 
 
