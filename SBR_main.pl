@@ -10,7 +10,7 @@ use SDL::App;
 use SDL::Surface;
 use SDL::Cursor;
 use SDL::Event;
-#use SDL::Mixer;
+use SDL::Mixer;
 use SDL::Sound;
 use SDL::TTFont;
 
@@ -19,10 +19,9 @@ use vars qw/@RaceTrack %STATE $map_file @ERGEBNISLISTE/;
 my $CRASH_COUNT=0;
 my $COUNT_ROUND=1;
 my $F = 0;  # Counter for time trial and Finish-Variable
-my %OptPathZeile;
-my %OptPathSpalte;
+my (%OptPathZeile, %OptPathSpalte); # globale Variablen fuer carW
 
-my @modes = qw/ car1 player carW/; # liste aller heuristik subroutinen
+my @modes = qw/car1 player carW/; # liste aller heuristik subroutinen
 
 pod2usage(-verbose => 0)
     unless GetOptions(
@@ -75,19 +74,18 @@ my $app = new SDL::App(
   -flags=>SDL_DOUBLEBUF | SDL_HWSURFACE | SDL_HWACCEL,
     );
 
-#my $mixer = new SDL::Mixer(-frequency=>44100, -channels=>2, -size=>1024);
-#my $car_sound = new SDL::Sound('Sounds/racecar.wav');
-#my $carcrash_sound = new SDL::Sound('Sounds/carcrash.wav');
-#my $car_start = new SDL::Sound('Sounds/start.wav');
-#my $car_crowd = new SDL::Sound('Sounds/crowd.wav');
-#$mixer->channel_volume(1, 30);
-#$mixer->play_channel(2, $car_start, 0);
+my $mixer = new SDL::Mixer(-frequency=>44100, -channels=>2, -size=>1024);
+my $car_sound = new SDL::Sound('Sounds/racecar.wav');
+my $carcrash_sound = new SDL::Sound('Sounds/carcrash.wav');
+my $car_start = new SDL::Sound('Sounds/start.wav');
+my $car_crowd = new SDL::Sound('Sounds/crowd.wav');
+$mixer->channel_volume(1, 30);
+$mixer->play_channel(2, $car_start, 0);
 
 track_map();
 
 %STATE = &set_start(\@RaceTrack, \%STATE);
 old_data();
-&optimum_path("Wolfi", 0);
 while ($F < (keys %STATE)) {
   
   #&vis(\@RaceTrack, \%STATE);
@@ -103,9 +101,9 @@ while ($F < (keys %STATE)) {
     elsif ($STATE{$player}{'mode'} eq 'player') {
       %STATE=&player($player, %STATE);
     }
-     elsif ($STATE{$player}{'mode'} eq 'carW') {
+    elsif ($STATE{$player}{'mode'} eq 'carW') {
       %STATE=&carW($player, %STATE);
-    }   
+    }
   }
   
   &check_Finish(\@RaceTrack, \%STATE);
@@ -148,7 +146,7 @@ sub player {
     @{$daten{$name}{speed}} = (0, 0);
     $daten{$name}{aussetzer} = '0';
     print "$name ist in eine Wand gecrasht und muss aussetzen\a\n";
-    #$mixer->play_channel(-1, $carcrash_sound, 0);
+    $mixer->play_channel(-1, $carcrash_sound, 0);
     return %daten;
   }
   elsif ($status == 2) { #schaut ob man diese runde aussetzen muss weil man mit auto collidierte
@@ -157,7 +155,7 @@ sub player {
     $daten{$name}{aussetzer} = '0';
     ${$daten{$name}{position}}[1]-=1 if ($CRASH_COUNT % 2);
     print "$name ist mit anderem auto collidiert und muss aussetzen!\n";
-    #$mixer->play_channel(-1, $carcrash_sound, 0);
+    $mixer->play_channel(-1, $carcrash_sound, 0);
     return %daten;
   }
   elsif ($status == 3) { #schaut ob man eh schon im ziel ist
@@ -205,8 +203,8 @@ sub player {
   if ($vol > 100){
     $vol = 100;
   }
-#$mixer->channel_volume(1,$vol);
-#$mixer->play_channel(1, $car_sound, 0);
+$mixer->channel_volume(1,$vol);
+$mixer->play_channel(1, $car_sound, 0);
   
 #update von %STATE mit neuer position und geschwindigkeit
   @{$daten{$name}{position}}=($px_neu, $py_neu);
@@ -232,11 +230,11 @@ sub carW {
     ${$daten{$name}{position}}[1]-=1 if ($CRASH_COUNT % 2);
     print "$name ist mit anderem auto collidiert und muss aussetzen!\n";
     &optimum_path($name,$COUNT_ROUND-1);
-    #$mixer->play_channel(-1, $carcrash_sound, 0);
+    $mixer->play_channel(-1, $carcrash_sound, 0);
     return %daten;
   }
 
-  unless (@OptPathZeile{$name}) {&optimum_path($name, 0)};
+  unless ($OptPathZeile{$name}) {&optimum_path($name, 0)};
   printf ("\n$name:\nAlte Position:\t[%d, %d]\nAlte Geschwindigkeit:\t[%d, %d]\n", $px_alt, $py_alt, $vx_alt*(-1), $vy_alt);
 
   if ($px_alt!=$OptPathZeile{$name}[$COUNT_ROUND-2]) {printf ("$px_alt, $COUNT_ROUND, $OptPathZeile{$name}[$COUNT_ROUND-1]: Mis-Communication between Main and CarW.\n")};
@@ -318,8 +316,8 @@ sub check_Finish {
     if ($state{$racer}{'aussetzer'}==3) {next};
     $state{$racer}->{'position'}->[0] = 0 if ($state{$racer}->{'position'}->[0] < 0); #setezt zeile auf null wenn man uebers ziel hinausschiesst
     if ($state{$racer}->{'position'}->[0] == 0 && $track[0]->[$state{$racer}->{'position'}->[1]] == 1) {
-#$mixer->channel_volume(2,100);
-#$mixer->play_channel(2, $car_crowd, 0);
+$mixer->channel_volume(2,100);
+$mixer->play_channel(2, $car_crowd, 0);
       $app->delay(2000);
       printf ("\n\n+-+---------------------------------------+-+\n+ +---------------------------------------+ +\n| |The glorious %8s finished the race| |\n+ +---------------------------------------+ +\n+-+---------------------------------------+-+\n\n\n", $racer); # gibt den sieger formatiert aus
       $state{$racer}{'aussetzer'}=3;
@@ -342,7 +340,7 @@ sub check_collision{
     if ($urteil >= 2) { #da position(fahrer1) mit position(fahrer1) immer ident => collision erst wenn 2 mal gleiche position auf tritt
       @{$data{$fahrer}{'speed'}}=(0,0);
       $data{$fahrer}{'aussetzer'}=2;
-#$mixer->play_channel(-1, $carcrash_sound, 0);
+$mixer->play_channel(-1, $carcrash_sound, 0);
     }
   }
   return %data;
@@ -497,6 +495,7 @@ sub track_map {
     $px_alt_text = $px_alt_text + 1;
     $py_alt_text = $py_alt_text + 1;
     my $map_pos_alt_text = $RaceTrack[$py_alt_text][$px_alt_text];
+    #print $map_pos_alt_text;
     my $px_alt_draw = $px_alt_text * $grid_x;
     my $py_alt_draw = $py_alt_text * $grid_y;
     config_map_screen();
@@ -528,6 +527,7 @@ sub track_map {
 #$app->sync();
   }
 }
+
 
 sub optimum_path {
     my $name=shift();
@@ -655,8 +655,9 @@ sub optimum_path {
         print "$i: $OptPathZeile{$name}[$i], $OptPathSpalte{$name}[$i]\n";
     }
 }
-  
- 
+
+
+
 __END__
     
 =pod
