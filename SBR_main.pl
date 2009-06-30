@@ -14,6 +14,7 @@ use SDL::Mixer;
 use SDL::Sound;
 use SDL::TTFont;
  
+use DPracer qw/DPracer/;
 use vars qw/@RaceTrack %STATE $map_file @ERGEBNISLISTE/;
  
 my $CRASH_COUNT=0;
@@ -21,7 +22,7 @@ my $COUNT_ROUND=1;
 my $F = 0; # Counter for time trial and Finish-Variable
 my (%OptPathZeile, %OptPathSpalte); # globale Variablen fuer carW
  
-my @modes = qw/player carW carF rambo/; # liste aller heuristik subroutinen
+my @modes = qw/player carW carF rambo DPracer/; # liste aller heuristik subroutinen
  
 pod2usage(-verbose => 0)
     unless GetOptions(
@@ -104,6 +105,9 @@ while ($F < (keys %STATE)) {
     }
     elsif ($STATE{$player}{'mode'} eq 'rambo') {
       %STATE=&rambo($player, %STATE);
+    }
+    elsif ($STATE{$player}{'mode'} eq 'DPracer') {
+      DPracer($player, \%STATE, \@RaceTrack);
     }
   }
   
@@ -957,27 +961,45 @@ print "$i: $OptPathZeile{$name}[$i], $OptPathSpalte{$name}[$i]\n";
  
  
  
-__END__
-=pod
 =head1 NAME
+
 SchoolBenchRacer.pl - old school racing game
+
 =head1 SYNOPSIS
+
 SBR.pl [[-racer I<STRING>] [-modes] [-help|?] [-man]]
+
 =over 4
+
 =item B<-racer>
+
 Names of the racers separated by ":" from the mode used (q.v. -mode); each racer:mode pair is separated by "," from the next. S<C<Example: SBR.pl -racer foo:car1,bar:car2>>
+
 =item B<-track>
+
 Option to play on a handmade trackfile. S<C<Example: -track FavoriteTrack.txt>>
+
 =item B<-modes>
+
 Lists all modes available to navigate your car through the track.
+
 =item B<-help>
+
 Show synopsis.
+
 =item B<-man>
+
 Show man page.
+
 =back
+
 =head1 STEUERSUBROUTINEN
+
 =over 4
+
 =item I<player>
+
 Keine KI sondern nur zum selber gegen den Computer zu spielen gedacht.
+
 =cut
- 
+ __END__
