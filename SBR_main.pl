@@ -532,11 +532,10 @@ sub rambo {
     
     unless (@options) {            #checkt ob man die naechste runde aussetzen muss
 	$state{$name}{aussetzer} = '1';
-        print "Crashed";
      return %state;
     }
     
-  print "FUCK, MISTAKE IN SUBROUTINE";
+  print "MISTAKE IN RAMBO-SUBROUTINE";
  return %state;
 }
 
