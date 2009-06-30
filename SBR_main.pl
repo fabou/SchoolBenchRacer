@@ -21,7 +21,7 @@ my $COUNT_ROUND=1;
 my $F = 0;  # Counter for time trial and Finish-Variable
 my (%OptPathZeile, %OptPathSpalte); # globale Variablen fuer carW
 
-my @modes = qw/car1 player carW carF rambo/; # liste aller heuristik subroutinen
+my @modes = qw/player carW carF rambo/; # liste aller heuristik subroutinen
 
 pod2usage(-verbose => 0)
     unless GetOptions(
@@ -93,7 +93,7 @@ while ($F < (keys %STATE)) {
   
   foreach my $player (keys %STATE) {
     track_cars();
-    elsif ($STATE{$player}{'mode'} eq 'player') {
+    if ($STATE{$player}{'mode'} eq 'player') {
       %STATE=&player($player, %STATE);
     }
     elsif ($STATE{$player}{'mode'} eq 'carW') {
@@ -370,49 +370,10 @@ sub carF {
     }
   }
   unless (@moeglichkeiten) { #checkt ob man die naechste runde aussetzen muss
-    my ($position_x, $position_y);
-    my $diff_x = $v0_x;
-    my $diff_y = $v0_y;
+
     
     $daten{$name}{aussetzer} = '1';
 
-    if ($diff_x >= 0 && $diff_y >= 0){
-      foreach my $x (0 .. $diff_x) {
-	foreach my $y (0 .. $diff_y) {
-	  if ($RaceTrack[$pos_x - $x][$pos_y - $y]){
-	    @{$daten{$name}{position}}=($pos_x -  $x, $pos_y - $y);
-	  }
-	}
-      }
-    }
-    elsif ($diff_x <= 0 && $diff_y <= 0){
-      foreach my $x (0 .. abs($diff_x)) {
-	foreach my $y (0 .. abs($diff_y)) {
-	  if ($RaceTrack[$pos_x + $x][$pos_y + $y]){
-	    @{$daten{$name}{position}}=($pos_x +  $x, $pos_y + $y);
-	  }
-	}
-      }
-    }
-    
-    elsif ($diff_x <= 0 && $diff_y >= 0){
-      foreach my $x (0 .. abs($diff_x)) {
-	foreach my $y (0 .. $diff_y) {
-	  if ($RaceTrack[$pos_x + $x][$pos_y - $y]){
-	    @{$daten{$name}{position}}=($pos_x +  $x, $pos_y - $y);
-	  }
-	}
-      }
-    }
-    elsif ($diff_x >= 0 && $diff_y >= 0){
-      foreach my $x (0 .. abs($diff_x)) {
-	foreach my $y (0 .. abs($diff_y)) {
-	  if ($RaceTrack[$pos_x - $x][$pos_y + $y]){
-	    @{$daten{$name}{position}}=($pos_x -  $x, $pos_y + $y);
-	  }
-	}
-      }
-    }
     
     print "\n\a$name verliert die Kontrolle ueber sein Auto und landet an der stelle  @{$daten{$name}{position}} unsanft in der Mauer\n";
     return(%daten);
@@ -695,6 +656,7 @@ sub check_collision{
   foreach my $fahrer (keys %data) { #vergleicht die position jeden fahrers mit ..
     my $urteil=0;
     my ($meine_pos_x, $meine_pos_y) = @{$data{$fahrer}{'position'}};
+    next if ($meine_pos_x == 0);
     foreach my $gegner (keys %data) { #allen anderen positionen
       my ($gegner_pos_x, $gegner_pos_y) = @{$data{$gegner}{'position'}};
       $urteil++ if ( ($gegner_pos_x == $meine_pos_x) && ($gegner_pos_y == $meine_pos_y) );
