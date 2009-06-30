@@ -751,7 +751,7 @@ sub draw_cars {
         $app->fill($cargrid, $car1color);
 
         my $txt_length = 1 + int(($grid_x - 12) / 10);
-        $nn =~ /^(.{2,$txt_length})/;
+        $nn =~ /^(.{1,$txt_length})/;
         $cartext = $1;
         my $gy = $gridpos_y + $grid_y;
         my $text_y = $grid_y / 2 - (12 / 2);
