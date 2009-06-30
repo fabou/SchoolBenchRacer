@@ -93,9 +93,6 @@ while ($F < (keys %STATE)) {
   
   foreach my $player (keys %STATE) {
     track_cars();
-    if ($STATE{$player}{'mode'} eq 'car1') {
-      %STATE=&car1($player, %STATE);
-    }
     elsif ($STATE{$player}{'mode'} eq 'player') {
       %STATE=&player($player, %STATE);
     }
