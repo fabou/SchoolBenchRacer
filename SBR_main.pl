@@ -764,7 +764,7 @@ sub draw_cars {
  sub draw_next_pos {
    my (@poss) = @_;
    my $postext = "T";
-   my $posfont = new SDL::TTFont(-name=>"Fonts/Vera.ttf", -size=>14, -bg=>$trackcolor, -fg=>$fgcolor);
+   my $posfont = new SDL::TTFont(-name=>"Fonts/Vera.ttf", -size=>10, -bg=>$trackcolor, -fg=>$fgcolor);
    foreach (0 .. $#poss) {
      my $postext = $_;
      my ( $relativ_y, $relativ_x) = (${$poss[$_]}[0], ${$poss[$_]}[1]);
