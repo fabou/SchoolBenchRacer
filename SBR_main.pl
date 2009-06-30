@@ -21,7 +21,7 @@ my $COUNT_ROUND=1;
 my $F = 0;  # Counter for time trial and Finish-Variable
 my (%OptPathZeile, %OptPathSpalte); # globale Variablen fuer carW
 
-my @modes = qw/car1 player carW/; # liste aller heuristik subroutinen
+my @modes = qw/car1 player carW carF/; # liste aller heuristik subroutinen
 
 pod2usage(-verbose => 0)
     unless GetOptions(
@@ -88,7 +88,7 @@ track_map();
 old_data();
 while ($F < (keys %STATE)) {
   
-  #&vis(\@RaceTrack, \%STATE);
+;
   
   printf ("\n+----------+\n|RUNDE: %3d|\n+----------+\n", $COUNT_ROUND);
   $COUNT_ROUND++;
@@ -104,6 +104,9 @@ while ($F < (keys %STATE)) {
     elsif ($STATE{$player}{'mode'} eq 'carW') {
       %STATE=&carW($player, %STATE);
     }
+    elsif ($STATE{$player}{'mode'} eq 'carF') {
+      %STATE=&carF($player, %STATE);
+    }
   }
   
   &check_Finish(\@RaceTrack, \%STATE);
@@ -111,7 +114,7 @@ while ($F < (keys %STATE)) {
   
   sleep(1);
   
-  $F=99, print "No winner after $COUNT_ROUND rounds!!\n" if ($COUNT_ROUND == 99);
+  $F=99, print "No winner after $COUNT_ROUND rounds!!\n" if ($COUNT_ROUND == 199);
 }
 print "\nErgebnisliste:\n--------------\n";
 foreach my $num (0 .. $#ERGEBNISLISTE) {
@@ -122,12 +125,7 @@ foreach my $num (0 .. $#ERGEBNISLISTE) {
 
 #--------Steuerungs-Subroutines --------#
 
-sub car1 {       # Cheater Subroutine, finishes within the First round!
-  my $name = shift;
-  my %daten = @_;
-  @{$daten{$name}{position}}=(0, 46);
-  return %daten;
-}
+
 
 sub player {
 #subroutine zum haendischen steuern des autos, um gegen den Computer anzutreten
@@ -168,11 +166,59 @@ sub player {
       push (@moeglichkeiten, [@{$n}]);
     }
   }
-  unless (@moeglichkeiten) { #checkt ob man die naechste runde aussetzen muss
-    $daten{$name}{aussetzer} = '1';
+   unless (@moeglichkeiten) { #checkt ob man die naechste runde aussetzen muss
+    my ($position_x, $position_y);
+    my $diff_x = $px_alt - $sp_x;
+    my $diff_y = $py_alt - $sp_y;
     
+    $daten{$name}{aussetzer} = '1';
+
+    if ($diff_x >= 0 && $diff_y >= 0){
+      foreach my $x (0 .. $diff_x) {
+	foreach my $y (0 .. $diff_y) {
+	  if ($streckenbild[$px_alt - $x][$py_alt - $y]){
+	    @{$daten{$name}{position}}=($px_alt -  $x, $py_alt - $y);
+	  }
+	}
+      }
+    }
+    elsif ($diff_x <= 0 && $diff_y <= 0){
+      foreach my $x (0 .. abs($diff_x)) {
+	foreach my $y (0 .. abs($diff_y)) {
+	  if ($streckenbild[$px_alt + $x][$py_alt + $y]){
+	    @{$daten{$name}{position}}=($px_alt +  $x, $py_alt + $y);
+	  }
+	}
+      }
+    }
+    
+    elsif ($diff_x <= 0 && $diff_y >= 0){
+      foreach my $x (0 .. abs($diff_x)) {
+	foreach my $y (0 .. $diff_y) {
+	  if ($streckenbild[$px_alt + $x][$py_alt - $y]){
+	    @{$daten{$name}{position}}=($px_alt +  $x, $py_alt - $y);
+	  }
+	}
+      }
+    }
+    elsif ($diff_x >= 0 && $diff_y >= 0){
+      foreach my $x (0 .. abs($diff_x)) {
+	foreach my $y (0 .. abs($diff_y)) {
+	  if ($streckenbild[$px_alt - $x][$py_alt + $y]){
+	    @{$daten{$name}{position}}=($px_alt -  $x, $py_alt + $y);
+	  }
+	}
+      }
+    }
+    
+    print "\n\a$name verliert die Kontrolle ueber sein Auto und landet an der stelle  @{$daten{$name}{position}} unsanft in der Mauer\n";
     return(%daten);
-  }  
+  }
+
+
+
+
+  
 #draw_next_pos($px_alt,$py_alt,$vx_alt,$vy_alt);
 #draw_next_pos(@moeglichkeiten);
   
@@ -249,7 +295,181 @@ sub carW {
   
   return %daten;
 }
+sub carF {
+  my $name = shift;
+  my %daten = @_;
+  my ($pos_x, $pos_y) = @{$daten{$name}{position}};
+  my ($pos_neu_x, $pos_neu_y);
+  my ($v0_x, $v0_y) = @{$daten{$name}{speed}};
+  my ($v_neu_x, $v_neu_y);
+  my $depth=0;
+  my $status = $daten{$name}{'aussetzer'};
+  my @moeglichkeiten;
+  my @gewertete_moeg;
+  my @weg;# = @RaceTrack;
+  my @min_ein_array;
 
+ if ($status == 1) { #schaut ob man diese runde aussetzen muss weil man die wand traf
+    @{$daten{$name}{speed}} = (0, 0);
+    $daten{$name}{aussetzer} = '0';
+    print "\n$name ist in eine Wand gecrasht und muss sein Auto kurz durchchecken\n";
+    #$mixer->play_channel(-1, $carcrash_sound, 0);
+    return %daten;
+  }
+  elsif ($status == 2) { #schaut ob man diese runde aussetzen muss weil man mit auto collidierte
+    $CRASH_COUNT++;
+    @{$daten{$name}{speed}} = (0, 0);
+    $daten{$name}{aussetzer} = '0';
+    ${$daten{$name}{position}}[1]-=1 if ($CRASH_COUNT % 2);
+    print "$name ist mit anderem auto collidiert und muss aussetzen!\n";
+    #$mixer->play_channel(-1, $carcrash_sound, 0);
+    return %daten;
+  }
+  elsif ($status == 3) { #schaut ob man eh schon im ziel ist
+    return %daten;
+  }
+  
+  foreach my $o (0 .. $#{$RaceTrack[0]}) {
+    if ($RaceTrack[0][$o] == 1) {
+      $weg[0][$o] = 2;
+    }
+  }
+    
+  for (my $i = 0; $i <2; $i++) {
+
+  foreach my $x (0 .. $#RaceTrack) {
+      foreach my $y (0 .. $#{$RaceTrack[0]}) {
+	if ($y <= $pos_y && $x == 0 ) {
+	  next;
+	}
+	if ($RaceTrack[$x][$y]) {
+	  $weg[$x][$y] = &min_g_eins($weg[$x-1][$y-1], $weg[$x-1][$y],$weg[$x-1][$y+1], $weg[$x][$y-1], $weg[$x][$y+1],$weg[$x+1][$y-1], $weg[$x+1][$y], $weg[$x+1][$y-1])+1;
+	}
+      }
+    }
+
+    foreach my $x (reverse(0 .. $#RaceTrack)) {
+      foreach my $y (reverse (0 .. $#{$RaceTrack[0]})) {
+	if ($y <= $pos_y && $x == 0 ) {
+	  next;
+	}
+	if ($RaceTrack[$x][$y]) {
+	  
+	  $weg[$x][$y] = &min_g_eins($weg[$x-1][$y-1], $weg[$x-1][$y],$weg[$x-1][$y+1], $weg[$x][$y-1], $weg[$x][$y+1],$weg[$x+1][$y-1], $weg[$x+1][$y], $weg[$x+1][$y-1])+1;
+	  
+	}
+      }
+    }
+  }
+
+  
+
+
+ foreach my $n ([$pos_x + $v0_x-1, $pos_y + $v0_y-1],[$pos_x + $v0_x-1, $pos_y + $v0_y],[$pos_x + $v0_x-1, $pos_y + $v0_y+1],[$pos_x + $v0_x, $pos_y + $v0_y-1],[$pos_x + $v0_x, $pos_y + $v0_y],[$pos_x + $v0_x, $pos_y + $v0_y+1],[$pos_x + $v0_x+1, $pos_y + $v0_y-1],[$pos_x + $v0_x+1, $pos_y + $v0_y],[$pos_x + $v0_x+1, $pos_y + $v0_y+1]) {
+    ${$n}[0]=0 if (${$n}[0]<0);
+    if ($RaceTrack[${$n}[0]][${$n}[1]]) {
+      push (@moeglichkeiten, [@{$n}]);
+    }
+  }
+  unless (@moeglichkeiten) { #checkt ob man die naechste runde aussetzen muss
+    my ($position_x, $position_y);
+    my $diff_x = $v0_x;
+    my $diff_y = $v0_y;
+    
+    $daten{$name}{aussetzer} = '1';
+
+    if ($diff_x >= 0 && $diff_y >= 0){
+      foreach my $x (0 .. $diff_x) {
+	foreach my $y (0 .. $diff_y) {
+	  if ($RaceTrack[$pos_x - $x][$pos_y - $y]){
+	    @{$daten{$name}{position}}=($pos_x -  $x, $pos_y - $y);
+	  }
+	}
+      }
+    }
+    elsif ($diff_x <= 0 && $diff_y <= 0){
+      foreach my $x (0 .. abs($diff_x)) {
+	foreach my $y (0 .. abs($diff_y)) {
+	  if ($RaceTrack[$pos_x + $x][$pos_y + $y]){
+	    @{$daten{$name}{position}}=($pos_x +  $x, $pos_y + $y);
+	  }
+	}
+      }
+    }
+    
+    elsif ($diff_x <= 0 && $diff_y >= 0){
+      foreach my $x (0 .. abs($diff_x)) {
+	foreach my $y (0 .. $diff_y) {
+	  if ($RaceTrack[$pos_x + $x][$pos_y - $y]){
+	    @{$daten{$name}{position}}=($pos_x +  $x, $pos_y - $y);
+	  }
+	}
+      }
+    }
+    elsif ($diff_x >= 0 && $diff_y >= 0){
+      foreach my $x (0 .. abs($diff_x)) {
+	foreach my $y (0 .. abs($diff_y)) {
+	  if ($RaceTrack[$pos_x - $x][$pos_y + $y]){
+	    @{$daten{$name}{position}}=($pos_x -  $x, $pos_y + $y);
+	  }
+	}
+      }
+    }
+    
+    print "\n\a$name verliert die Kontrolle ueber sein Auto und landet an der stelle  @{$daten{$name}{position}} unsanft in der Mauer\n";
+    return(%daten);
+  }
+  
+
+  foreach my $kk (@moeglichkeiten) {
+    my $xx = shift(@{$kk});
+    my $yy = shift(@{$kk});
+    push (@gewertete_moeg, [$xx, $yy, $weg[$xx][$yy]]);
+  }
+
+
+  #print Dumper(@gewertete_moeg);
+  ($pos_neu_x, $pos_neu_y) = &min_weg(@gewertete_moeg);
+  ($v_neu_x, $v_neu_y) = ($pos_neu_x - $pos_x, $pos_neu_y - $pos_y);
+
+ 
+  @{$daten{$name}{position}}=($pos_neu_x, $pos_neu_y);
+  @{$daten{$name}{speed}}=($v_neu_x, $v_neu_y);
+
+  return %daten;
+
+
+  sub min_weg {
+    my @array = @_;
+    my @min = @{$array[0]};
+    foreach my $tt (@array) {
+      if (${$tt}[2] < $min[2]) {
+	@min = @{$tt};
+      }
+    }
+    return ($min[0], $min[1]);
+  }
+  
+  sub min_g_eins {
+    my @list = ();
+    foreach my $mo (@_) {
+      if ($mo) {
+	push (@list, $mo)if ($mo > 1) ;
+      }
+    }
+    my $min_so_far = shift(@list);
+    
+    foreach my $ko (@list) {
+      if ($ko < $min_so_far) {
+	$min_so_far = $ko;
+      }
+    }
+    if ($min_so_far) {
+      return $min_so_far
+    }
+    else {return 0 }
+  }
+}
 
 #------------- Subroutines -------------#
 
