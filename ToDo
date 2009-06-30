@@ -1,0 +1,23 @@
+(incomplete)
+
+0.) Data structure for a state of single player car-race.
+
+1.) Function to calculate the child states of a given single-player car-race state, as defined in what I wrote at uni.
+
+
+
+
+
+
+
+
+Maybe)	A list sorting function. I might use this to put car-game states into order of desirablility, or into order of lowest f(state).	An easy and slow way to do the sort would be to convert the list into an array, qsort that, and then convert the array back to a list. (f... function to determine for a state, *at least* how many turns will have passed when one plays perfectly from this state onward.)
+
+Probably) f, as described above
+
+
+
+
+Maybe) As 0 but for multi-player car-race
+
+Maybe) As 1, but for multi-player car-race. This is probably unnessecarily complicated.
