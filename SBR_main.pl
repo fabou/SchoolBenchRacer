@@ -554,7 +554,7 @@ return @opt;
  
 sub readin_RaceTrack {
 unless ($map_file) {
-my $spielerzahl = (keys %STATE);
+my $spielerzahl = (keys %STATE) + 2;
 my $status = system("java -jar ./RennstreckenGenerator.jar $spielerzahl");
 if (($status >>=8) !=0) {
 die "WARNING: Failed to run the Track Generator!\a\n";
